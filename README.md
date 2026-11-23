@@ -16,7 +16,7 @@ bytes, scores the answers by executing hidden unit tests, and writes JSON, CSV a
 
 | Check | Where | Status |
 |---|---|---|
-| Unit tests (evaluation, configs, results, charts, inference plumbing, position sweep, LongCodeU loader + metrics) | CPU, Python 3.13, transformers 5.24 and 4.46 | 40 passed, 2 GPU-only tests skipped |
+| Unit tests (evaluation, configs, results, charts, inference plumbing, position sweep, LongCodeU loader + metrics) | CPU, Python 3.13, transformers 5.24 and 4.46 | 42 passed, 2 GPU-only tests skipped |
 | End-to-end run of all 30 tasks | CPU, tiny **random-weight** Qwen2-architecture model | runs, saves, evaluates, charts (output is gibberish by design) |
 | Qwen2.5-Coder-7B on GPU | **your SageMaker instance** | **not run yet**: notebooks 01–04 do it |
 
