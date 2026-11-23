@@ -36,6 +36,8 @@ def main(argv=None):
     model, tok, info = load_model(cfg)
     print("model:", json.dumps(info, indent=2, default=str))
     runner = InferenceRunner(model, tok, cfg)
+    # untimed warm-up so CUDA kernel/library initialisation is not counted in the first measurement
+    runner.run(tok("def add(a, b):", add_special_tokens=False)["input_ids"], 8)
     ids, pinfo = prepare_prompt(tok, s, cfg)
     r = runner.run(ids, pinfo["max_new_tokens"])
     ev = evaluate_sample(s, r["response"])
