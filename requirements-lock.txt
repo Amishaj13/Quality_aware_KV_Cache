@@ -1,0 +1,2 @@
+# Placeholder. setup_env.sh overwrites this file with `pip freeze` from the SageMaker
+# instance the experiments actually run on. Commit the generated version with the results.

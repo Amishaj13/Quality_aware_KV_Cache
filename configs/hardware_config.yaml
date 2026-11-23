@@ -1,0 +1,32 @@
+# Planning guidance only; check_gpu.py compares it with the detected GPU.
+# These are estimates, not guaranteed compatibility.
+vram_rules:
+  - max_gb: 12
+    advice: "Do not assume the 7B model fits. Use a smaller coding model or 4-bit weights, short contexts."
+    suggested_quantization: 4bit
+    suggested_context: 2048
+  - max_gb: 20
+    advice: "Test 4-bit weight loading and short contexts."
+    suggested_quantization: 4bit
+    suggested_context: 4096
+  - max_gb: 32
+    advice: "Attempt the 7B model in bf16/fp16 at 8K context."
+    suggested_quantization: none
+    suggested_context: 8192
+  - max_gb: 60
+    advice: "Run 7B full-cache inference at progressively longer contexts (16K, 32K)."
+    suggested_quantization: none
+    suggested_context: 32768
+  - max_gb: 1000
+    advice: "Comfortable for long-context baseline experiments."
+    suggested_quantization: none
+    suggested_context: 32768
+
+# Instances visible in the project's SageMaker quota (Nov 2026). Prices are
+# approximate on-demand USD/hour in us-east-1; check your region's pricing page.
+instances:
+  ml.g6.xlarge:  {gpu: "NVIDIA L4",   vram_gb: 24, vcpu: 4, ram_gb: 16, approx_usd_per_hour: 1.0}
+  ml.g5.xlarge:  {gpu: "NVIDIA A10G", vram_gb: 24, vcpu: 4, ram_gb: 16, approx_usd_per_hour: 1.4}
+  ml.g4dn.xlarge: {gpu: "NVIDIA T4",  vram_gb: 16, vcpu: 4, ram_gb: 16, approx_usd_per_hour: 0.74, note: "quota 0; no bf16"}
+
+min_free_disk_gb: 40   # 7B weights (~15 GB) + pip cache + results

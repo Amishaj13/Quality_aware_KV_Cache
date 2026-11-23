@@ -1,0 +1,667 @@
+[
+  {
+    "sample_id": "python_001",
+    "split": "test",
+    "workflow": "completion",
+    "group_id": "g_binary_search",
+    "language": "python",
+    "task": "Complete the function so it satisfies its docstring. Return only the complete Python code in one ```python block.",
+    "context": "def binary_search(items, target):\n    \"\"\"Return the index of target in the sorted list items, or -1 if absent.\n    Must run in O(log n).\"\"\"\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Iterative binary search returning index or -1.",
+    "expected_behavior": "Index of target or -1.",
+    "max_new_tokens": 256,
+    "entry_point": "binary_search",
+    "reference_solution": "def binary_search(items, target):\n    lo, hi = 0, len(items) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if items[mid] == target:\n            return mid\n        if items[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n",
+    "tests": [
+      "assert binary_search([1, 3, 5, 7, 9], 7) == 3",
+      "assert binary_search([1, 3, 5, 7, 9], 1) == 0",
+      "assert binary_search([1, 3, 5, 7, 9], 9) == 4",
+      "assert binary_search([1, 3, 5], 4) == -1",
+      "assert binary_search([], 1) == -1"
+    ]
+  },
+  {
+    "sample_id": "python_002",
+    "split": "validation",
+    "workflow": "completion",
+    "group_id": "g_word_freq",
+    "language": "python",
+    "task": "Complete the function so it satisfies its docstring. Return only the complete Python code in one ```python block.",
+    "context": "def top_k_words(text, k):\n    \"\"\"Return the k most frequent words in text as a list of (word, count) tuples.\n    Words are lower-cased and split on whitespace; punctuation .,!? is stripped\n    from both ends of each word. Ties are broken alphabetically.\"\"\"\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Counts words and sorts by (-count, word).",
+    "expected_behavior": "List of (word, count).",
+    "max_new_tokens": 256,
+    "entry_point": "top_k_words",
+    "reference_solution": "from collections import Counter\ndef top_k_words(text, k):\n    words = [w.strip(\".,!?\").lower() for w in text.split()]\n    counts = Counter(w for w in words if w)\n    return sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:k]\n",
+    "tests": [
+      "assert top_k_words('a b a c b a', 2) == [('a', 3), ('b', 2)]",
+      "assert top_k_words('Hello, hello world!', 1) == [('hello', 2)]",
+      "assert top_k_words('x y z', 2) == [('x', 1), ('y', 1)]",
+      "assert top_k_words('', 3) == []"
+    ]
+  },
+  {
+    "sample_id": "python_003",
+    "split": "train",
+    "workflow": "completion",
+    "group_id": "g_flatten",
+    "language": "python",
+    "task": "Complete the function so it satisfies its docstring. Return only the complete Python code in one ```python block.",
+    "context": "def flatten(nested):\n    \"\"\"Flatten arbitrarily nested lists and tuples into a single list, keeping order.\n    Strings are treated as atoms, not iterated.\"\"\"\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Recursive flatten of lists/tuples.",
+    "expected_behavior": "Flat list.",
+    "max_new_tokens": 256,
+    "entry_point": "flatten",
+    "reference_solution": "def flatten(nested):\n    out = []\n    for x in nested:\n        if isinstance(x, (list, tuple)):\n            out.extend(flatten(x))\n        else:\n            out.append(x)\n    return out\n",
+    "tests": [
+      "assert flatten([1, [2, [3, (4, 5)]], 6]) == [1, 2, 3, 4, 5, 6]",
+      "assert flatten([]) == []",
+      "assert flatten(['ab', ['cd']]) == ['ab', 'cd']",
+      "assert flatten([[[]]]) == []"
+    ]
+  },
+  {
+    "sample_id": "python_004",
+    "split": "train",
+    "workflow": "completion",
+    "group_id": "g_lru",
+    "language": "python",
+    "task": "Complete the class so it satisfies its docstring. Return only the complete Python code in one ```python block.",
+    "context": "class LRUCache:\n    \"\"\"Least-recently-used cache with a fixed capacity.\n    get(key) returns the value or -1 and marks the key as recently used.\n    put(key, value) inserts/updates and evicts the least recently used key when full.\"\"\"\n\n    def __init__(self, capacity):\n        ...\n\n    def get(self, key):\n        ...\n\n    def put(self, key, value):\n        ...\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "OrderedDict-based LRU cache.",
+    "expected_behavior": "LRU eviction semantics.",
+    "max_new_tokens": 256,
+    "entry_point": "LRUCache",
+    "reference_solution": "from collections import OrderedDict\nclass LRUCache:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.data = OrderedDict()\n    def get(self, key):\n        if key not in self.data:\n            return -1\n        self.data.move_to_end(key)\n        return self.data[key]\n    def put(self, key, value):\n        if key in self.data:\n            self.data.move_to_end(key)\n        self.data[key] = value\n        if len(self.data) > self.capacity:\n            self.data.popitem(last=False)\n",
+    "tests": [
+      "c = LRUCache(2); c.put(1, 1); c.put(2, 2); assert c.get(1) == 1",
+      "c = LRUCache(2); c.put(1, 1); c.put(2, 2); c.get(1); c.put(3, 3); assert c.get(2) == -1",
+      "c = LRUCache(2); c.put(1, 1); c.put(2, 2); c.get(1); c.put(3, 3); assert c.get(1) == 1 and c.get(3) == 3",
+      "c = LRUCache(1); c.put(1, 1); c.put(1, 5); assert c.get(1) == 5",
+      "c = LRUCache(1); assert c.get(9) == -1"
+    ]
+  },
+  {
+    "sample_id": "python_005",
+    "split": "test",
+    "workflow": "completion",
+    "group_id": "g_intervals",
+    "language": "python",
+    "task": "Complete the function so it satisfies its docstring. Return only the complete Python code in one ```python block.",
+    "context": "def merge_intervals(intervals):\n    \"\"\"Merge overlapping [start, end] intervals (touching intervals also merge).\n    Input may be unsorted. Return a new sorted list of merged intervals.\"\"\"\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Sort by start then merge.",
+    "expected_behavior": "Sorted merged intervals.",
+    "max_new_tokens": 256,
+    "entry_point": "merge_intervals",
+    "reference_solution": "def merge_intervals(intervals):\n    out = []\n    for s, e in sorted(intervals):\n        if out and s <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], e)\n        else:\n            out.append([s, e])\n    return out\n",
+    "tests": [
+      "assert merge_intervals([[1, 3], [2, 6], [8, 10]]) == [[1, 6], [8, 10]]",
+      "assert merge_intervals([[5, 6], [1, 2]]) == [[1, 2], [5, 6]]",
+      "assert merge_intervals([[1, 4], [4, 5]]) == [[1, 5]]",
+      "assert merge_intervals([]) == []",
+      "assert merge_intervals([[1, 10], [2, 3]]) == [[1, 10]]"
+    ]
+  },
+  {
+    "sample_id": "python_006",
+    "split": "train",
+    "workflow": "completion",
+    "group_id": "g_roman",
+    "language": "python",
+    "task": "Complete the function so it satisfies its docstring. Return only the complete Python code in one ```python block.",
+    "context": "def to_roman(n):\n    \"\"\"Convert an integer 1 <= n <= 3999 to a Roman numeral string.\n    Raise ValueError outside that range.\"\"\"\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Greedy value/symbol table.",
+    "expected_behavior": "Roman numeral string.",
+    "max_new_tokens": 256,
+    "entry_point": "to_roman",
+    "reference_solution": "def to_roman(n):\n    if not 1 <= n <= 3999:\n        raise ValueError(n)\n    table = [(1000, 'M'), (900, 'CM'), (500, 'D'), (400, 'CD'), (100, 'C'), (90, 'XC'),\n             (50, 'L'), (40, 'XL'), (10, 'X'), (9, 'IX'), (5, 'V'), (4, 'IV'), (1, 'I')]\n    out = ''\n    for v, s in table:\n        while n >= v:\n            out += s\n            n -= v\n    return out\n",
+    "tests": [
+      "assert to_roman(1994) == 'MCMXCIV'",
+      "assert to_roman(4) == 'IV'",
+      "assert to_roman(3999) == 'MMMCMXCIX'",
+      "try:\n    to_roman(0)\n    raise AssertionError('no error')\nexcept ValueError:\n    pass"
+    ]
+  },
+  {
+    "sample_id": "python_007",
+    "split": "test",
+    "workflow": "debugging",
+    "group_id": "g_binary_search",
+    "language": "python",
+    "task": "The function below has a bug. Find it and return the corrected function. Return only the complete Python code in one ```python block.",
+    "context": "def binary_search(items, target):\n    \"\"\"Return the index of target in the sorted list items, or -1 if absent.\"\"\"\n    lo, hi = 0, len(items) - 1\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if items[mid] == target:\n            return mid\n        if items[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Loop condition must be lo <= hi; otherwise single-element ranges are skipped.",
+    "expected_behavior": "Finds the last element and single-element lists.",
+    "max_new_tokens": 256,
+    "entry_point": "binary_search",
+    "reference_solution": "def binary_search(items, target):\n    lo, hi = 0, len(items) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if items[mid] == target:\n            return mid\n        if items[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n",
+    "tests": [
+      "assert binary_search([1, 3, 5, 7, 9], 7) == 3",
+      "assert binary_search([1, 3, 5, 7, 9], 1) == 0",
+      "assert binary_search([1, 3, 5, 7, 9], 9) == 4",
+      "assert binary_search([1, 3, 5], 4) == -1",
+      "assert binary_search([], 1) == -1",
+      "assert binary_search([4], 4) == 0"
+    ]
+  },
+  {
+    "sample_id": "python_008",
+    "split": "test",
+    "workflow": "debugging",
+    "group_id": "g_avg",
+    "language": "python",
+    "task": "The function below has a bug. Find it and return the corrected function. Return only the complete Python code in one ```python block.",
+    "context": "def moving_average(values, window):\n    \"\"\"Return the list of averages of each consecutive window of size `window`.\"\"\"\n    out = []\n    for i in range(len(values) - window):\n        out.append(sum(values[i:i + window]) / window)\n    return out\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Off-by-one: range must be len(values) - window + 1.",
+    "expected_behavior": "Includes the final window.",
+    "max_new_tokens": 256,
+    "entry_point": "moving_average",
+    "reference_solution": "def moving_average(values, window):\n    out = []\n    for i in range(len(values) - window + 1):\n        out.append(sum(values[i:i + window]) / window)\n    return out\n",
+    "tests": [
+      "assert moving_average([1, 2, 3, 4], 2) == [1.5, 2.5, 3.5]",
+      "assert moving_average([5], 1) == [5.0]",
+      "assert moving_average([1, 2], 3) == []"
+    ]
+  },
+  {
+    "sample_id": "python_009",
+    "split": "train",
+    "workflow": "debugging",
+    "group_id": "g_mutable_default",
+    "language": "python",
+    "task": "The function below has a bug. Find it and return the corrected function. Return only the complete Python code in one ```python block.",
+    "context": "def add_tag(tag, tags=[]):\n    \"\"\"Return a new list made of `tags` plus `tag`. Calls must not affect each other.\"\"\"\n    tags.append(tag)\n    return tags\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Mutable default argument is shared between calls; use None.",
+    "expected_behavior": "Independent results per call.",
+    "max_new_tokens": 256,
+    "entry_point": "add_tag",
+    "reference_solution": "def add_tag(tag, tags=None):\n    tags = list(tags) if tags else []\n    tags.append(tag)\n    return tags\n",
+    "tests": [
+      "add_tag('a'); assert add_tag('b') == ['b']",
+      "assert add_tag('x', ['y']) == ['y', 'x']",
+      "base = ['k']; add_tag('z', base); assert base == ['k']"
+    ]
+  },
+  {
+    "sample_id": "python_010",
+    "split": "train",
+    "workflow": "debugging",
+    "group_id": "g_palindrome",
+    "language": "python",
+    "task": "The function below has a bug. Find it and return the corrected function. Return only the complete Python code in one ```python block.",
+    "context": "def is_palindrome(s):\n    \"\"\"True if s reads the same forwards and backwards, ignoring case and\n    non-alphanumeric characters.\"\"\"\n    cleaned = [c for c in s if c.isalnum()]\n    return cleaned == cleaned[::-1]\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Case is not normalised; lower-case the characters.",
+    "expected_behavior": "Case-insensitive check.",
+    "max_new_tokens": 256,
+    "entry_point": "is_palindrome",
+    "reference_solution": "def is_palindrome(s):\n    cleaned = [c.lower() for c in s if c.isalnum()]\n    return cleaned == cleaned[::-1]\n",
+    "tests": [
+      "assert is_palindrome('A man, a plan, a canal: Panama')",
+      "assert not is_palindrome('race a car')",
+      "assert is_palindrome('')",
+      "assert is_palindrome('Aa')"
+    ]
+  },
+  {
+    "sample_id": "python_011",
+    "split": "train",
+    "workflow": "debugging",
+    "group_id": "g_dict_iter",
+    "language": "python",
+    "task": "The function below has a bug. Find it and return the corrected function. Return only the complete Python code in one ```python block.",
+    "context": "def remove_small(scores, threshold):\n    \"\"\"Remove, in place, every entry of the dict `scores` whose value is below\n    threshold, and return the dict.\"\"\"\n    for name in scores:\n        if scores[name] < threshold:\n            del scores[name]\n    return scores\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Deleting while iterating raises RuntimeError; iterate over a copy of the keys.",
+    "expected_behavior": "Removes small entries without error.",
+    "max_new_tokens": 256,
+    "entry_point": "remove_small",
+    "reference_solution": "def remove_small(scores, threshold):\n    for name in list(scores):\n        if scores[name] < threshold:\n            del scores[name]\n    return scores\n",
+    "tests": [
+      "assert remove_small({'a': 1, 'b': 5, 'c': 2}, 3) == {'b': 5}",
+      "d = {'a': 1}; remove_small(d, 2); assert d == {}",
+      "assert remove_small({}, 1) == {}"
+    ]
+  },
+  {
+    "sample_id": "python_012",
+    "split": "train",
+    "workflow": "debugging",
+    "group_id": "g_fib",
+    "language": "python",
+    "task": "The function below has a bug. Find it and return the corrected function. Return only the complete Python code in one ```python block.",
+    "context": "def fib(n):\n    \"\"\"Return the n-th Fibonacci number with fib(0) == 0 and fib(1) == 1.\"\"\"\n    a, b = 0, 1\n    for _ in range(n):\n        a = b\n        b = a + b\n    return a\n",
+    "eval_type": "unit_tests",
+    "reference_answer": "Sequential assignment loses the old value of a; use tuple assignment a, b = b, a + b.",
+    "expected_behavior": "Correct Fibonacci numbers.",
+    "max_new_tokens": 256,
+    "entry_point": "fib",
+    "reference_solution": "def fib(n):\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n",
+    "tests": [
+      "assert fib(0) == 0",
+      "assert fib(1) == 1",
+      "assert fib(2) == 1",
+      "assert fib(10) == 55"
+    ]
+  },
+  {
+    "sample_id": "python_013",
+    "split": "train",
+    "workflow": "testgen",
+    "group_id": "g_clamp",
+    "language": "python",
+    "task": "Write pytest unit tests for the function below. Import it with `from solution import clamp`. Cover normal cases and edge cases. Return only the test code in one ```python block.",
+    "context": "def clamp(x, low, high):\n    \"\"\"Limit x to the closed range [low, high]. Raise ValueError if low > high.\"\"\"\n    if low > high:\n        raise ValueError(\"low > high\")\n    return max(low, min(x, high))\n",
+    "eval_type": "testgen",
+    "reference_answer": "Tests for below, inside, above range and invalid bounds.",
+    "expected_behavior": "Tests pass on correct code, fail on bugs.",
+    "max_new_tokens": 256,
+    "module_name": "solution",
+    "reference_solution": "def clamp(x, low, high):\n    if low > high:\n        raise ValueError(\"low > high\")\n    return max(low, min(x, high))\n",
+    "buggy_solutions": [
+      "def clamp(x, low, high):\n    return max(low, min(x, high))\n",
+      "def clamp(x, low, high):\n    if low > high:\n        raise ValueError(\"low > high\")\n    return min(low, max(x, high))\n"
+    ]
+  },
+  {
+    "sample_id": "python_014",
+    "split": "train",
+    "workflow": "testgen",
+    "group_id": "g_slug",
+    "language": "python",
+    "task": "Write pytest unit tests for the function below. Import it with `from solution import slugify`. Cover normal cases and edge cases. Return only the test code in one ```python block.",
+    "context": "import re\n\ndef slugify(title):\n    \"\"\"Lower-case title, replace runs of non-alphanumeric characters with a single\n    '-', and strip leading/trailing '-'.\"\"\"\n    return re.sub(r\"[^a-z0-9]+\", \"-\", title.lower()).strip(\"-\")\n",
+    "eval_type": "testgen",
+    "reference_answer": "Tests for spaces, punctuation runs, edges and case.",
+    "expected_behavior": "Tests pass on correct code, fail on bugs.",
+    "max_new_tokens": 256,
+    "module_name": "solution",
+    "reference_solution": "import re\ndef slugify(title):\n    return re.sub(r\"[^a-z0-9]+\", \"-\", title.lower()).strip(\"-\")\n",
+    "buggy_solutions": [
+      "import re\ndef slugify(title):\n    return re.sub(r\"[^a-z0-9]+\", \"-\", title.lower())\n",
+      "import re\ndef slugify(title):\n    return re.sub(r\"[^a-z0-9]\", \"-\", title.lower()).strip(\"-\")\n"
+    ]
+  },
+  {
+    "sample_id": "python_015",
+    "split": "train",
+    "workflow": "testgen",
+    "group_id": "g_chunks",
+    "language": "python",
+    "task": "Write pytest unit tests for the function below. Import it with `from solution import chunk`. Cover normal cases and edge cases. Return only the test code in one ```python block.",
+    "context": "def chunk(items, size):\n    \"\"\"Split items into consecutive lists of length `size`; the last may be shorter.\n    Raise ValueError if size < 1.\"\"\"\n    if size < 1:\n        raise ValueError(\"size must be >= 1\")\n    return [items[i:i + size] for i in range(0, len(items), size)]\n",
+    "eval_type": "testgen",
+    "reference_answer": "Tests for exact split, remainder, empty input and invalid size.",
+    "expected_behavior": "Tests pass on correct code, fail on bugs.",
+    "max_new_tokens": 256,
+    "module_name": "solution",
+    "reference_solution": "def chunk(items, size):\n    if size < 1:\n        raise ValueError(\"size must be >= 1\")\n    return [items[i:i + size] for i in range(0, len(items), size)]\n",
+    "buggy_solutions": [
+      "def chunk(items, size):\n    if size < 1:\n        raise ValueError(\"size must be >= 1\")\n    return [items[i:i + size] for i in range(0, len(items) - size + 1, size)]\n",
+      "def chunk(items, size):\n    return [items[i:i + size] for i in range(0, len(items), max(size, 1))]\n"
+    ]
+  },
+  {
+    "sample_id": "python_016",
+    "split": "train",
+    "workflow": "testgen",
+    "group_id": "g_roman",
+    "language": "python",
+    "task": "Write pytest unit tests for the function below. Import it with `from solution import to_roman`. Cover normal cases and edge cases. Return only the test code in one ```python block.",
+    "context": "def to_roman(n):\n    if not 1 <= n <= 3999:\n        raise ValueError(n)\n    table = [(1000, 'M'), (900, 'CM'), (500, 'D'), (400, 'CD'), (100, 'C'), (90, 'XC'),\n             (50, 'L'), (40, 'XL'), (10, 'X'), (9, 'IX'), (5, 'V'), (4, 'IV'), (1, 'I')]\n    out = ''\n    for v, s in table:\n        while n >= v:\n            out += s\n            n -= v\n    return out\n",
+    "eval_type": "testgen",
+    "reference_answer": "Tests for subtractive forms, bounds and ValueError.",
+    "expected_behavior": "Tests pass on correct code, fail on bugs.",
+    "max_new_tokens": 256,
+    "module_name": "solution",
+    "reference_solution": "def to_roman(n):\n    if not 1 <= n <= 3999:\n        raise ValueError(n)\n    table = [(1000, 'M'), (900, 'CM'), (500, 'D'), (400, 'CD'), (100, 'C'), (90, 'XC'),\n             (50, 'L'), (40, 'XL'), (10, 'X'), (9, 'IX'), (5, 'V'), (4, 'IV'), (1, 'I')]\n    out = ''\n    for v, s in table:\n        while n >= v:\n            out += s\n            n -= v\n    return out\n",
+    "buggy_solutions": [
+      "def to_roman(n):\n    if not 1 <= n <= 3999:\n        raise ValueError(n)\n    table = [(1000, 'M'), (500, 'D'), (100, 'C'), (90, 'XC'),\n             (50, 'L'), (10, 'X'), (5, 'V'), (1, 'I')]\n    out = ''\n    for v, s in table:\n        while n >= v:\n            out += s\n            n -= v\n    return out\n",
+      "def to_roman(n):\n        table = [(1000, 'M'), (900, 'CM'), (500, 'D'), (400, 'CD'), (100, 'C'), (90, 'XC'),\n             (50, 'L'), (40, 'XL'), (10, 'X'), (9, 'IX'), (5, 'V'), (4, 'IV'), (1, 'I')]\n    out = ''\n    for v, s in table:\n        while n >= v:\n            out += s\n            n -= v\n    return out\n"
+    ]
+  },
+  {
+    "sample_id": "python_017",
+    "split": "train",
+    "workflow": "testgen",
+    "group_id": "g_parse_kv",
+    "language": "python",
+    "task": "Write pytest unit tests for the function below. Import it with `from solution import parse_kv`. Cover normal cases and edge cases. Return only the test code in one ```python block.",
+    "context": "def parse_kv(line):\n    \"\"\"Parse 'k1=v1;k2=v2' into a dict. Whitespace around keys and values is\n    stripped, empty segments are ignored, and a segment without '=' raises ValueError.\"\"\"\n    out = {}\n    for part in line.split(\";\"):\n        if not part.strip():\n            continue\n        if \"=\" not in part:\n            raise ValueError(part)\n        k, v = part.split(\"=\", 1)\n        out[k.strip()] = v.strip()\n    return out\n",
+    "eval_type": "testgen",
+    "reference_answer": "Tests for normal parsing, whitespace, empty segments, '=' in value, invalid segment.",
+    "expected_behavior": "Tests pass on correct code, fail on bugs.",
+    "max_new_tokens": 256,
+    "module_name": "solution",
+    "reference_solution": "def parse_kv(line):\n    out = {}\n    for part in line.split(\";\"):\n        if not part.strip():\n            continue\n        if \"=\" not in part:\n            raise ValueError(part)\n        k, v = part.split(\"=\", 1)\n        out[k.strip()] = v.strip()\n    return out\n",
+    "buggy_solutions": [
+      "def parse_kv(line):\n    out = {}\n    for part in line.split(\";\"):\n        if not part.strip():\n            continue\n        if \"=\" not in part:\n            raise ValueError(part)\n        k, v = part.split(\"=\", 1)\n        out[k] = v\n    return out\n",
+      "def parse_kv(line):\n    out = {}\n    for part in line.split(\";\"):\n        if not part.strip() or \"=\" not in part:\n            continue\n        k, v = part.split(\"=\", 1)\n        out[k.strip()] = v.strip()\n    return out\n"
+    ]
+  },
+  {
+    "sample_id": "python_018",
+    "split": "validation",
+    "workflow": "testgen",
+    "group_id": "g_median",
+    "language": "python",
+    "task": "Write pytest unit tests for the function below. Import it with `from solution import median`. Cover normal cases and edge cases. Return only the test code in one ```python block.",
+    "context": "def median(values):\n    \"\"\"Return the median of a non-empty list of numbers (mean of the two middle\n    values for even length). Raise ValueError on an empty list. Must not modify the input.\"\"\"\n    if not values:\n        raise ValueError(\"empty\")\n    s = sorted(values)\n    m = len(s) // 2\n    return s[m] if len(s) % 2 else (s[m - 1] + s[m]) / 2\n",
+    "eval_type": "testgen",
+    "reference_answer": "Tests for odd, even, unsorted input, empty list.",
+    "expected_behavior": "Tests pass on correct code, fail on bugs.",
+    "max_new_tokens": 256,
+    "module_name": "solution",
+    "reference_solution": "def median(values):\n    if not values:\n        raise ValueError(\"empty\")\n    s = sorted(values)\n    m = len(s) // 2\n    return s[m] if len(s) % 2 else (s[m - 1] + s[m]) / 2\n",
+    "buggy_solutions": [
+      "def median(values):\n    if not values:\n        raise ValueError(\"empty\")\n    s = sorted(values)\n    return s[len(s) // 2]\n",
+      "def median(values):\n    if not values:\n        raise ValueError(\"empty\")\n    m = len(values) // 2\n    return values[m] if len(values) % 2 else (values[m - 1] + values[m]) / 2\n"
+    ]
+  },
+  {
+    "sample_id": "python_019",
+    "split": "train",
+    "workflow": "longcode",
+    "group_id": "g_inventory",
+    "language": "python",
+    "task": "Explain what `order_total` computes, step by step, including when a discount applies.",
+    "context": "from dataclasses import dataclass, field\n\nTAX_RATE = 0.08\nBULK_THRESHOLD = 10\nBULK_DISCOUNT = 0.05\n\n\n@dataclass\nclass Item:\n    sku: str\n    price: float\n    quantity: int = 0\n\n\n@dataclass\nclass Inventory:\n    items: dict = field(default_factory=dict)\n\n    def add(self, sku, price, quantity):\n        if sku in self.items:\n            self.items[sku].quantity += quantity\n        else:\n            self.items[sku] = Item(sku, price, quantity)\n\n    def remove(self, sku, quantity):\n        item = self.items.get(sku)\n        if item is None or item.quantity < quantity:\n            raise KeyError(f\"not enough {sku}\")\n        item.quantity -= quantity\n        if item.quantity == 0:\n            del self.items[sku]\n\n    def value(self):\n        return sum(i.price * i.quantity for i in self.items.values())\n\n\ndef order_total(inventory, sku, quantity):\n    \"\"\"Price of an order including bulk discount and tax.\"\"\"\n    item = inventory.items[sku]\n    subtotal = item.price * quantity\n    if quantity >= BULK_THRESHOLD:\n        subtotal *= 1 - BULK_DISCOUNT\n    return round(subtotal * (1 + TAX_RATE), 2)\n",
+    "eval_type": "keywords",
+    "reference_answer": "order_total multiplies the item's price by the quantity, applies a 5% bulk discount when the quantity is at least 10, then adds 8% tax and rounds to 2 decimals.",
+    "expected_behavior": "Mentions price x quantity, bulk discount at 10+, 5%, tax 8%, rounding.",
+    "max_new_tokens": 256,
+    "keywords": [
+      [
+        "price"
+      ],
+      [
+        "quantity"
+      ],
+      [
+        "discount"
+      ],
+      [
+        "10",
+        "ten",
+        "bulk_threshold"
+      ],
+      [
+        "tax",
+        "tax_rate"
+      ],
+      [
+        "round",
+        "rounds",
+        "rounded",
+        "rounding"
+      ]
+    ]
+  },
+  {
+    "sample_id": "python_020",
+    "split": "train",
+    "workflow": "longcode",
+    "group_id": "g_inventory",
+    "language": "python",
+    "task": "What does `order_total(inv, 'A', 10)` return if item 'A' has price 10.0? Give the number.",
+    "context": "from dataclasses import dataclass, field\n\nTAX_RATE = 0.08\nBULK_THRESHOLD = 10\nBULK_DISCOUNT = 0.05\n\n\n@dataclass\nclass Item:\n    sku: str\n    price: float\n    quantity: int = 0\n\n\n@dataclass\nclass Inventory:\n    items: dict = field(default_factory=dict)\n\n    def add(self, sku, price, quantity):\n        if sku in self.items:\n            self.items[sku].quantity += quantity\n        else:\n            self.items[sku] = Item(sku, price, quantity)\n\n    def remove(self, sku, quantity):\n        item = self.items.get(sku)\n        if item is None or item.quantity < quantity:\n            raise KeyError(f\"not enough {sku}\")\n        item.quantity -= quantity\n        if item.quantity == 0:\n            del self.items[sku]\n\n    def value(self):\n        return sum(i.price * i.quantity for i in self.items.values())\n\n\ndef order_total(inventory, sku, quantity):\n    \"\"\"Price of an order including bulk discount and tax.\"\"\"\n    item = inventory.items[sku]\n    subtotal = item.price * quantity\n    if quantity >= BULK_THRESHOLD:\n        subtotal *= 1 - BULK_DISCOUNT\n    return round(subtotal * (1 + TAX_RATE), 2)\n",
+    "eval_type": "answer_match",
+    "reference_answer": "102.6",
+    "expected_behavior": "10*10=100, -5% = 95, +8% tax = 102.6.",
+    "max_new_tokens": 256,
+    "expected_answers": [
+      "102.6",
+      "102.60"
+    ]
+  },
+  {
+    "sample_id": "python_021",
+    "split": "test",
+    "workflow": "longcode",
+    "group_id": "g_parser",
+    "language": "python",
+    "task": "Explain how this module evaluates an arithmetic expression and how operator precedence is handled.",
+    "context": "import re\n\nTOKEN_SPEC = [\n    (\"NUMBER\", r\"\\d+(?:\\.\\d+)?\"),\n    (\"IDENT\", r\"[A-Za-z_][A-Za-z0-9_]*\"),\n    (\"OP\", r\"[+\\-*/()]\"),\n    (\"SKIP\", r\"[ \\t]+\"),\n    (\"MISMATCH\", r\".\"),\n]\nMASTER = re.compile(\"|\".join(f\"(?P<{n}>{p})\" for n, p in TOKEN_SPEC))\n\n\ndef tokenize(text):\n    for m in MASTER.finditer(text):\n        kind, value = m.lastgroup, m.group()\n        if kind == \"SKIP\":\n            continue\n        if kind == \"MISMATCH\":\n            raise SyntaxError(f\"unexpected {value!r}\")\n        yield kind, value\n\n\nclass Parser:\n    def __init__(self, text, env=None):\n        self.tokens = list(tokenize(text))\n        self.pos = 0\n        self.env = env or {}\n\n    def peek(self):\n        return self.tokens[self.pos][1] if self.pos < len(self.tokens) else None\n\n    def take(self):\n        tok = self.tokens[self.pos]\n        self.pos += 1\n        return tok\n\n    def expr(self):\n        value = self.term()\n        while self.peek() in (\"+\", \"-\"):\n            op = self.take()[1]\n            value = value + self.term() if op == \"+\" else value - self.term()\n        return value\n\n    def term(self):\n        value = self.factor()\n        while self.peek() in (\"*\", \"/\"):\n            op = self.take()[1]\n            value = value * self.factor() if op == \"*\" else value / self.factor()\n        return value\n\n    def factor(self):\n        kind, value = self.take()\n        if kind == \"NUMBER\":\n            return float(value)\n        if kind == \"IDENT\":\n            return float(self.env[value])\n        if value == \"(\":\n            inner = self.expr()\n            self.take()\n            return inner\n        if value == \"-\":\n            return -self.factor()\n        raise SyntaxError(f\"unexpected {value!r}\")\n\n\ndef evaluate(text, **env):\n    return Parser(text, env).expr()\n",
+    "eval_type": "keywords",
+    "reference_answer": "The text is tokenized with a regular expression, then a recursive-descent parser evaluates it: expr handles + and -, term handles * and / so multiplication binds tighter, factor handles numbers, variables from env, parentheses and unary minus.",
+    "expected_behavior": "Mentions tokenizer/regex, recursive descent, expr/term/factor precedence, parentheses, variables.",
+    "max_new_tokens": 256,
+    "keywords": [
+      [
+        "token",
+        "tokens",
+        "tokenize",
+        "tokenizer",
+        "tokenizes"
+      ],
+      [
+        "regex",
+        "regular expression",
+        "re"
+      ],
+      [
+        "recursive",
+        "recursive descent",
+        "recursion"
+      ],
+      [
+        "precedence",
+        "binds",
+        "higher priority"
+      ],
+      [
+        "parentheses",
+        "parenthesis",
+        "brackets"
+      ],
+      [
+        "env",
+        "variable",
+        "variables",
+        "environment"
+      ]
+    ]
+  },
+  {
+    "sample_id": "python_022",
+    "split": "test",
+    "workflow": "longcode",
+    "group_id": "g_parser",
+    "language": "python",
+    "task": "What value does `evaluate('2 + 3 * (x - 1)', x=4)` return? Give the number.",
+    "context": "import re\n\nTOKEN_SPEC = [\n    (\"NUMBER\", r\"\\d+(?:\\.\\d+)?\"),\n    (\"IDENT\", r\"[A-Za-z_][A-Za-z0-9_]*\"),\n    (\"OP\", r\"[+\\-*/()]\"),\n    (\"SKIP\", r\"[ \\t]+\"),\n    (\"MISMATCH\", r\".\"),\n]\nMASTER = re.compile(\"|\".join(f\"(?P<{n}>{p})\" for n, p in TOKEN_SPEC))\n\n\ndef tokenize(text):\n    for m in MASTER.finditer(text):\n        kind, value = m.lastgroup, m.group()\n        if kind == \"SKIP\":\n            continue\n        if kind == \"MISMATCH\":\n            raise SyntaxError(f\"unexpected {value!r}\")\n        yield kind, value\n\n\nclass Parser:\n    def __init__(self, text, env=None):\n        self.tokens = list(tokenize(text))\n        self.pos = 0\n        self.env = env or {}\n\n    def peek(self):\n        return self.tokens[self.pos][1] if self.pos < len(self.tokens) else None\n\n    def take(self):\n        tok = self.tokens[self.pos]\n        self.pos += 1\n        return tok\n\n    def expr(self):\n        value = self.term()\n        while self.peek() in (\"+\", \"-\"):\n            op = self.take()[1]\n            value = value + self.term() if op == \"+\" else value - self.term()\n        return value\n\n    def term(self):\n        value = self.factor()\n        while self.peek() in (\"*\", \"/\"):\n            op = self.take()[1]\n            value = value * self.factor() if op == \"*\" else value / self.factor()\n        return value\n\n    def factor(self):\n        kind, value = self.take()\n        if kind == \"NUMBER\":\n            return float(value)\n        if kind == \"IDENT\":\n            return float(self.env[value])\n        if value == \"(\":\n            inner = self.expr()\n            self.take()\n            return inner\n        if value == \"-\":\n            return -self.factor()\n        raise SyntaxError(f\"unexpected {value!r}\")\n\n\ndef evaluate(text, **env):\n    return Parser(text, env).expr()\n",
+    "eval_type": "answer_match",
+    "reference_answer": "11.0",
+    "expected_behavior": "3*(4-1)=9, 2+9=11.",
+    "max_new_tokens": 256,
+    "expected_answers": [
+      "11.0",
+      "11"
+    ]
+  },
+  {
+    "sample_id": "python_023",
+    "split": "train",
+    "workflow": "longcode",
+    "group_id": "g_ratelimit",
+    "language": "python",
+    "task": "Explain what this code does and how `allow` decides whether a request is allowed.",
+    "context": "import time\n\n\nclass TokenBucket:\n    \"\"\"Allow `rate` requests per second with bursts up to `capacity`.\"\"\"\n\n    def __init__(self, rate, capacity, clock=time.monotonic):\n        self.rate = rate\n        self.capacity = capacity\n        self.tokens = capacity\n        self.clock = clock\n        self.last = clock()\n\n    def _refill(self):\n        now = self.clock()\n        self.tokens = min(self.capacity, self.tokens + (now - self.last) * self.rate)\n        self.last = now\n\n    def allow(self, cost=1):\n        self._refill()\n        if self.tokens >= cost:\n            self.tokens -= cost\n            return True\n        return False\n\n\nclass KeyedLimiter:\n    def __init__(self, rate, capacity, clock=time.monotonic):\n        self.buckets = {}\n        self.rate, self.capacity, self.clock = rate, capacity, clock\n\n    def allow(self, key, cost=1):\n        if key not in self.buckets:\n            self.buckets[key] = TokenBucket(self.rate, self.capacity, self.clock)\n        return self.buckets[key].allow(cost)\n",
+    "eval_type": "keywords",
+    "reference_answer": "It implements a token-bucket rate limiter: tokens refill continuously at `rate` per second up to `capacity`; allow refills, then permits the request and subtracts its cost if enough tokens remain. KeyedLimiter keeps one bucket per key.",
+    "expected_behavior": "Mentions token bucket, refill rate, capacity/burst, cost subtraction, per-key buckets.",
+    "max_new_tokens": 256,
+    "keywords": [
+      [
+        "token bucket",
+        "bucket"
+      ],
+      [
+        "refill",
+        "refills",
+        "replenish"
+      ],
+      [
+        "rate"
+      ],
+      [
+        "capacity",
+        "burst"
+      ],
+      [
+        "cost"
+      ],
+      [
+        "key",
+        "per-key",
+        "per key",
+        "each key"
+      ]
+    ]
+  },
+  {
+    "sample_id": "python_024",
+    "split": "train",
+    "workflow": "longcode",
+    "group_id": "g_ratelimit",
+    "language": "python",
+    "task": "With a fake clock starting at 0, `b = TokenBucket(rate=1, capacity=2, clock=clock)`. At time 0, `b.allow()` is called three times. How many of the three calls return True? Answer with a single number.",
+    "context": "import time\n\n\nclass TokenBucket:\n    \"\"\"Allow `rate` requests per second with bursts up to `capacity`.\"\"\"\n\n    def __init__(self, rate, capacity, clock=time.monotonic):\n        self.rate = rate\n        self.capacity = capacity\n        self.tokens = capacity\n        self.clock = clock\n        self.last = clock()\n\n    def _refill(self):\n        now = self.clock()\n        self.tokens = min(self.capacity, self.tokens + (now - self.last) * self.rate)\n        self.last = now\n\n    def allow(self, cost=1):\n        self._refill()\n        if self.tokens >= cost:\n            self.tokens -= cost\n            return True\n        return False\n\n\nclass KeyedLimiter:\n    def __init__(self, rate, capacity, clock=time.monotonic):\n        self.buckets = {}\n        self.rate, self.capacity, self.clock = rate, capacity, clock\n\n    def allow(self, key, cost=1):\n        if key not in self.buckets:\n            self.buckets[key] = TokenBucket(self.rate, self.capacity, self.clock)\n        return self.buckets[key].allow(cost)\n",
+    "eval_type": "answer_match",
+    "reference_answer": "2",
+    "expected_behavior": "Capacity 2, no time passes, so the third call is denied.",
+    "max_new_tokens": 256,
+    "expected_answers": [
+      "2",
+      "two"
+    ]
+  },
+  {
+    "sample_id": "python_025",
+    "split": "test",
+    "workflow": "repoqa",
+    "group_id": "g_shop",
+    "language": "python",
+    "task": "In this repository, which file defines the function that decides the shipping fee? Answer with the file path.",
+    "context": "# file: shop/config.py\nDEFAULT_CURRENCY = \"EUR\"\nFREE_SHIPPING_OVER = 50.0\nSHIPPING_FEE = 4.99\n\n\n# file: shop/models.py\nfrom dataclasses import dataclass\n\n\n@dataclass\nclass LineItem:\n    name: str\n    unit_price: float\n    qty: int\n\n\n@dataclass\nclass Cart:\n    items: list\n    coupon: str = \"\"\n\n\n# file: shop/pricing.py\nfrom shop.config import FREE_SHIPPING_OVER, SHIPPING_FEE\nfrom shop.coupons import coupon_discount\n\n\ndef subtotal(cart):\n    return sum(i.unit_price * i.qty for i in cart.items)\n\n\ndef shipping(amount):\n    return 0.0 if amount >= FREE_SHIPPING_OVER else SHIPPING_FEE\n\n\ndef cart_total(cart):\n    base = subtotal(cart)\n    discounted = base - coupon_discount(cart.coupon, base)\n    return round(discounted + shipping(discounted), 2)\n\n\n# file: shop/coupons.py\nCOUPONS = {\"WELCOME10\": 0.10, \"VIP20\": 0.20}\n\n\ndef coupon_discount(code, amount):\n    rate = COUPONS.get(code.upper(), 0.0)\n    return amount * rate\n\n\n# file: shop/api.py\nfrom shop.models import Cart, LineItem\nfrom shop.pricing import cart_total\n\n\ndef checkout(payload):\n    items = [LineItem(**i) for i in payload[\"items\"]]\n    cart = Cart(items, payload.get(\"coupon\", \"\"))\n    return {\"total\": cart_total(cart), \"currency\": payload.get(\"currency\", \"EUR\")}\n",
+    "eval_type": "answer_match",
+    "reference_answer": "shop/pricing.py",
+    "expected_behavior": "The shipping() function lives in shop/pricing.py.",
+    "max_new_tokens": 256,
+    "expected_answers": [
+      "shop/pricing.py"
+    ]
+  },
+  {
+    "sample_id": "python_026",
+    "split": "test",
+    "workflow": "repoqa",
+    "group_id": "g_shop",
+    "language": "python",
+    "task": "Which function in which file applies the coupon percentage? Answer as file_path:function_name.",
+    "context": "# file: shop/config.py\nDEFAULT_CURRENCY = \"EUR\"\nFREE_SHIPPING_OVER = 50.0\nSHIPPING_FEE = 4.99\n\n\n# file: shop/models.py\nfrom dataclasses import dataclass\n\n\n@dataclass\nclass LineItem:\n    name: str\n    unit_price: float\n    qty: int\n\n\n@dataclass\nclass Cart:\n    items: list\n    coupon: str = \"\"\n\n\n# file: shop/pricing.py\nfrom shop.config import FREE_SHIPPING_OVER, SHIPPING_FEE\nfrom shop.coupons import coupon_discount\n\n\ndef subtotal(cart):\n    return sum(i.unit_price * i.qty for i in cart.items)\n\n\ndef shipping(amount):\n    return 0.0 if amount >= FREE_SHIPPING_OVER else SHIPPING_FEE\n\n\ndef cart_total(cart):\n    base = subtotal(cart)\n    discounted = base - coupon_discount(cart.coupon, base)\n    return round(discounted + shipping(discounted), 2)\n\n\n# file: shop/coupons.py\nCOUPONS = {\"WELCOME10\": 0.10, \"VIP20\": 0.20}\n\n\ndef coupon_discount(code, amount):\n    rate = COUPONS.get(code.upper(), 0.0)\n    return amount * rate\n\n\n# file: shop/api.py\nfrom shop.models import Cart, LineItem\nfrom shop.pricing import cart_total\n\n\ndef checkout(payload):\n    items = [LineItem(**i) for i in payload[\"items\"]]\n    cart = Cart(items, payload.get(\"coupon\", \"\"))\n    return {\"total\": cart_total(cart), \"currency\": payload.get(\"currency\", \"EUR\")}\n",
+    "eval_type": "answer_match",
+    "reference_answer": "shop/coupons.py:coupon_discount",
+    "expected_behavior": "coupon_discount in shop/coupons.py.",
+    "max_new_tokens": 256,
+    "expected_answers": [
+      "coupon_discount"
+    ]
+  },
+  {
+    "sample_id": "python_027",
+    "split": "test",
+    "workflow": "repoqa",
+    "group_id": "g_shop",
+    "language": "python",
+    "task": "What total does `checkout` return for one item with unit_price 30 and qty 2 and coupon 'welcome10'? Give the number.",
+    "context": "# file: shop/config.py\nDEFAULT_CURRENCY = \"EUR\"\nFREE_SHIPPING_OVER = 50.0\nSHIPPING_FEE = 4.99\n\n\n# file: shop/models.py\nfrom dataclasses import dataclass\n\n\n@dataclass\nclass LineItem:\n    name: str\n    unit_price: float\n    qty: int\n\n\n@dataclass\nclass Cart:\n    items: list\n    coupon: str = \"\"\n\n\n# file: shop/pricing.py\nfrom shop.config import FREE_SHIPPING_OVER, SHIPPING_FEE\nfrom shop.coupons import coupon_discount\n\n\ndef subtotal(cart):\n    return sum(i.unit_price * i.qty for i in cart.items)\n\n\ndef shipping(amount):\n    return 0.0 if amount >= FREE_SHIPPING_OVER else SHIPPING_FEE\n\n\ndef cart_total(cart):\n    base = subtotal(cart)\n    discounted = base - coupon_discount(cart.coupon, base)\n    return round(discounted + shipping(discounted), 2)\n\n\n# file: shop/coupons.py\nCOUPONS = {\"WELCOME10\": 0.10, \"VIP20\": 0.20}\n\n\ndef coupon_discount(code, amount):\n    rate = COUPONS.get(code.upper(), 0.0)\n    return amount * rate\n\n\n# file: shop/api.py\nfrom shop.models import Cart, LineItem\nfrom shop.pricing import cart_total\n\n\ndef checkout(payload):\n    items = [LineItem(**i) for i in payload[\"items\"]]\n    cart = Cart(items, payload.get(\"coupon\", \"\"))\n    return {\"total\": cart_total(cart), \"currency\": payload.get(\"currency\", \"EUR\")}\n",
+    "eval_type": "answer_match",
+    "reference_answer": "54.0",
+    "expected_behavior": "60 - 10% = 54 >= 50 so free shipping; total 54.0.",
+    "max_new_tokens": 256,
+    "expected_answers": [
+      "54.0",
+      "54"
+    ]
+  },
+  {
+    "sample_id": "python_028",
+    "split": "validation",
+    "workflow": "repoqa",
+    "group_id": "g_jobs",
+    "language": "python",
+    "task": "How does `run_job` find the function to call for a job type? Name the mechanism and the file where handlers are registered.",
+    "context": "# file: jobs/registry.py\n_HANDLERS = {}\n\n\ndef register(name):\n    def deco(fn):\n        _HANDLERS[name] = fn\n        return fn\n    return deco\n\n\ndef get_handler(name):\n    return _HANDLERS[name]\n\n\n# file: jobs/retry.py\nimport time\n\nMAX_ATTEMPTS = 3\nBACKOFF_SECONDS = 0.5\n\n\ndef with_retry(fn, *args, sleep=time.sleep):\n    for attempt in range(1, MAX_ATTEMPTS + 1):\n        try:\n            return fn(*args)\n        except ConnectionError:\n            if attempt == MAX_ATTEMPTS:\n                raise\n            sleep(BACKOFF_SECONDS * 2 ** (attempt - 1))\n\n\n# file: jobs/handlers.py\nfrom jobs.registry import register\n\n\n@register(\"resize\")\ndef resize_image(path, width):\n    return f\"{path}@{width}\"\n\n\n@register(\"email\")\ndef send_email(address, body):\n    return f\"sent to {address}\"\n\n\n# file: jobs/worker.py\nfrom jobs.registry import get_handler\nfrom jobs.retry import with_retry\nimport jobs.handlers  # noqa: F401  (registers handlers)\n\n\ndef run_job(job):\n    handler = get_handler(job[\"type\"])\n    return with_retry(handler, *job[\"args\"])\n",
+    "eval_type": "keywords",
+    "reference_answer": "Handlers register themselves with the @register decorator into the _HANDLERS dict in jobs/registry.py; jobs/handlers.py is imported by jobs/worker.py so the decorators run, and run_job looks the handler up with get_handler.",
+    "expected_behavior": "Mentions decorator registry, _HANDLERS dict, jobs/handlers.py import, get_handler.",
+    "max_new_tokens": 256,
+    "keywords": [
+      [
+        "register",
+        "decorator"
+      ],
+      [
+        "_handlers",
+        "dict",
+        "dictionary",
+        "registry"
+      ],
+      [
+        "jobs/handlers.py",
+        "handlers.py"
+      ],
+      [
+        "get_handler"
+      ],
+      [
+        "import",
+        "imported",
+        "imports"
+      ]
+    ]
+  },
+  {
+    "sample_id": "python_029",
+    "split": "validation",
+    "workflow": "repoqa",
+    "group_id": "g_jobs",
+    "language": "python",
+    "task": "How many times in total will a handler be called if it always raises ConnectionError? Answer with a single number.",
+    "context": "# file: jobs/registry.py\n_HANDLERS = {}\n\n\ndef register(name):\n    def deco(fn):\n        _HANDLERS[name] = fn\n        return fn\n    return deco\n\n\ndef get_handler(name):\n    return _HANDLERS[name]\n\n\n# file: jobs/retry.py\nimport time\n\nMAX_ATTEMPTS = 3\nBACKOFF_SECONDS = 0.5\n\n\ndef with_retry(fn, *args, sleep=time.sleep):\n    for attempt in range(1, MAX_ATTEMPTS + 1):\n        try:\n            return fn(*args)\n        except ConnectionError:\n            if attempt == MAX_ATTEMPTS:\n                raise\n            sleep(BACKOFF_SECONDS * 2 ** (attempt - 1))\n\n\n# file: jobs/handlers.py\nfrom jobs.registry import register\n\n\n@register(\"resize\")\ndef resize_image(path, width):\n    return f\"{path}@{width}\"\n\n\n@register(\"email\")\ndef send_email(address, body):\n    return f\"sent to {address}\"\n\n\n# file: jobs/worker.py\nfrom jobs.registry import get_handler\nfrom jobs.retry import with_retry\nimport jobs.handlers  # noqa: F401  (registers handlers)\n\n\ndef run_job(job):\n    handler = get_handler(job[\"type\"])\n    return with_retry(handler, *job[\"args\"])\n",
+    "eval_type": "answer_match",
+    "reference_answer": "3",
+    "expected_behavior": "MAX_ATTEMPTS = 3, then the error is re-raised.",
+    "max_new_tokens": 256,
+    "expected_answers": [
+      "3",
+      "three"
+    ]
+  },
+  {
+    "sample_id": "python_030",
+    "split": "validation",
+    "workflow": "repoqa",
+    "group_id": "g_jobs",
+    "language": "python",
+    "task": "What is the total time slept by `with_retry` before it finally re-raises, if every attempt fails? Give the number of seconds.",
+    "context": "# file: jobs/registry.py\n_HANDLERS = {}\n\n\ndef register(name):\n    def deco(fn):\n        _HANDLERS[name] = fn\n        return fn\n    return deco\n\n\ndef get_handler(name):\n    return _HANDLERS[name]\n\n\n# file: jobs/retry.py\nimport time\n\nMAX_ATTEMPTS = 3\nBACKOFF_SECONDS = 0.5\n\n\ndef with_retry(fn, *args, sleep=time.sleep):\n    for attempt in range(1, MAX_ATTEMPTS + 1):\n        try:\n            return fn(*args)\n        except ConnectionError:\n            if attempt == MAX_ATTEMPTS:\n                raise\n            sleep(BACKOFF_SECONDS * 2 ** (attempt - 1))\n\n\n# file: jobs/handlers.py\nfrom jobs.registry import register\n\n\n@register(\"resize\")\ndef resize_image(path, width):\n    return f\"{path}@{width}\"\n\n\n@register(\"email\")\ndef send_email(address, body):\n    return f\"sent to {address}\"\n\n\n# file: jobs/worker.py\nfrom jobs.registry import get_handler\nfrom jobs.retry import with_retry\nimport jobs.handlers  # noqa: F401  (registers handlers)\n\n\ndef run_job(job):\n    handler = get_handler(job[\"type\"])\n    return with_retry(handler, *job[\"args\"])\n",
+    "eval_type": "answer_match",
+    "reference_answer": "1.5",
+    "expected_behavior": "Sleeps 0.5 then 1.0 seconds = 1.5.",
+    "max_new_tokens": 256,
+    "expected_answers": [
+      "1.5"
+    ]
+  }
+]

@@ -1,0 +1,17 @@
+# Model settings. Change only with a note in the experiment log: results from
+# different weights / precisions / quantization must not be mixed in one comparison.
+model:
+  name: Qwen/Qwen2.5-Coder-7B-Instruct      # primary research model
+  revision: main                            # pin a commit hash before the final runs
+  trust_remote_code: false
+  # auto = bfloat16 if the GPU supports it (A10G, L4, A100, H100), else float16.
+  dtype: auto                               # auto | bfloat16 | float16 | float32
+  # sdpa = PyTorch scaled-dot-product attention (no FlashAttention install needed)
+  attn_implementation: sdpa                 # sdpa | eager
+  device_map: cuda                          # cuda | auto | cpu
+  # 4-bit weights only if the bf16 model does not fit (needs bitsandbytes).
+  # Changing this changes the model: label any result produced with it.
+  quantization: none                        # none | 4bit
+  # Fallback for pipeline debugging only. Results with it are PRELIMINARY
+  # pipeline-validation results, not Qwen-7B benchmark results.
+  fallback_name: Qwen/Qwen2.5-Coder-1.5B-Instruct

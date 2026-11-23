@@ -1,0 +1,48 @@
+# Full KV-cache baseline. Every value is validated by utils/config.py.
+experiment:
+  experiment_id: baseline_001
+  workflow: all              # all | longcode | completion | repoqa | debugging | testgen
+  cache_method: full         # only "full" is implemented in this phase
+  context_length: 8192       # budget for prompt tokens + max_new_tokens
+  max_new_tokens: 256
+  batch_size: 1
+  temperature: 0.0
+  do_sample: false
+  repetition_penalty: 1.0    # Qwen's generation_config defaults to 1.05; 1.0 = pure greedy
+  seed: 0
+  # What to do if prompt + max_new_tokens exceeds context_length:
+  #   skip     -> record the sample with status "context_overflow" (default)
+  #   truncate -> cut the middle of the code context, record truncated=true
+  overflow_policy: skip
+  # Separate prefill-only forward pass to measure prefill time and KV bytes after prefill.
+  # Adds one extra forward per sample; excluded from total_inference_seconds.
+  measure_prefill: true
+  warmup: true               # one short untimed generation before the first sample
+
+# Optional long-context padding: surround the task's code with unrelated synthetic
+# Python (the KIVI baseline's haystack generator) until the prompt reaches
+# target_tokens, placing the real code at `depth` (0.0 = start, 1.0 = end).
+# Off for the basic baseline; see configs/experiment_longctx.yaml.
+context_fill:
+  enabled: false
+  target_tokens: 0
+  depth: 0.5
+  seed: 1234
+
+dataset:
+  path: datasets/sample_tasks.json
+  split: all                 # all | train | validation | test
+  max_samples: 30
+
+evaluation:
+  exec_timeout_seconds: 10
+
+output:
+  results_directory: results
+  save_responses: true
+
+# Optional upload after a run. Never creates buckets. Leave bucket empty to skip.
+# Can also be set with the env vars KVR_S3_BUCKET / KVR_S3_PREFIX.
+s3:
+  bucket: ""
+  prefix: kv_cache_research

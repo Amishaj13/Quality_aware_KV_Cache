@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.env
+*.safetensors
+*.bin
+hf_cache/
+kivi_baseline/results/
+kivi_baseline/logs/
