@@ -99,3 +99,14 @@ def test_prepare_and_run_longcodeu(fake_hub, tmp_path, model_name, device_map):
     from analyze_results import analyze
     summary, charts = analyze("longcodeu_8k_full", str(tmp_path / "res"))
     assert any("longcodeu_by_task" in str(p) for p in charts) and summary["longcodeu_mean_score"] is not None
+    import pandas as pd
+    by_task = pd.read_csv(tmp_path / "res/csv/longcodeu_8k_full_longcodeu_by_task.csv")
+    assert set(by_task.subtask) == {"CU_P", "DRA_T1", "LDU"} and by_task.n.sum() == 6
+    # results saved before subtask was recorded are recovered from the sample id
+    rows = json.loads((tmp_path / "res/json/longcodeu_8k_full.json").read_text())
+    for r in rows:
+        r.pop("subtask", None)
+    (tmp_path / "res/json/longcodeu_8k_full.json").write_text(json.dumps(rows))
+    analyze("longcodeu_8k_full", str(tmp_path / "res"))
+    by_task = pd.read_csv(tmp_path / "res/csv/longcodeu_8k_full_longcodeu_by_task.csv")
+    assert set(by_task.subtask) == {"CU_P", "DRA_T1", "LDU"}

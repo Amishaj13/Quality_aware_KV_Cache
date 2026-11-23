@@ -121,7 +121,10 @@ def longcodeu_chart(df, path, label, csv_path):
     """Mean LongCodeU score (F1 of recall/precision, or CodeBLEU/BLEU) per subtask."""
     if "longcodeu_score" not in df or df.longcodeu_score.isna().all():
         return None
-    d = df[df.longcodeu_score.notna()]
+    d = df[df.longcodeu_score.notna()].copy()
+    # runs before this fix did not store subtask; recover it from ids like lcu_cu_p_12 / lcu_dra_t1_7
+    missing = d.subtask.isna() & d.sample_id.str.startswith("lcu_")
+    d.loc[missing, "subtask"] = d.loc[missing, "sample_id"].str[4:].str.rsplit("_", n=1).str[0].str.upper()
     g = d.groupby("subtask").agg(n=("longcodeu_score", "size"), score=("longcodeu_score", "mean"),
                                  recall=("longcodeu_recall", "mean"), precision=("longcodeu_precision", "mean"),
                                  metric=("longcodeu_metric", "first"), input_tokens=("input_tokens", "mean"))

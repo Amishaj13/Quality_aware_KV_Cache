@@ -158,7 +158,8 @@ def run(cfg, resume=False, overwrite=False, loaded=None, allow_shared_gpu=False)
         if s["sample_id"] in done:
             continue
         rec = new_record(**base, sample_id=s["sample_id"], workflow=s["workflow"], split=s.get("split"),
-                         eval_type=s.get("eval_type"), max_new_tokens=None, truncated=None)
+                         eval_type=s.get("eval_type"), max_new_tokens=None, truncated=None,
+                         benchmark=s.get("benchmark", "custom"), subtask=s.get("subtask"))
         try:
             try:
                 ids, pinfo = prepare_prompt(tok, s, cfg)
