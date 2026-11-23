@@ -18,9 +18,9 @@ bytes, scores the answers by executing hidden unit tests, and writes JSON, CSV a
 |---|---|---|
 | Unit tests (evaluation, configs, results, charts, inference plumbing, position sweep, LongCodeU loader + metrics) | CPU, Python 3.13, transformers 5.24 and 4.46 | 42 passed, 2 GPU-only tests skipped |
 | End-to-end run of all 30 tasks | CPU, tiny **random-weight** Qwen2-architecture model | runs, saves, evaluates, charts (output is gibberish by design) |
-| Qwen2.5-Coder-7B on GPU | **your SageMaker instance** | **not run yet**: notebooks 01–04 do it |
+| Qwen2.5-Coder-7B on GPU | SageMaker, NVIDIA A10G (ml.g5.xlarge) | **done**: baseline_001, position sweep, LongCodeU 0~8K (see `results/`) |
 
-No GPU numbers in this repository are real until you run it on SageMaker.
+A plain-language walkthrough of everything built and measured is in [docs/PIPELINE_EXPLAINED.md](docs/PIPELINE_EXPLAINED.md).
 
 ## Hardware plan (from your SageMaker quotas)
 
@@ -222,7 +222,7 @@ and it is the reference for adding KIVI as a `cache_methods/` entry (see `docs/R
 Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-retrieval task.
 
 ## Known limitations
-- No GPU result has been produced yet; everything GPU-side is written and CPU-tested only.
+- No compression method has been run yet; all GPU results are full-cache baselines.
 - 30 hand-written tasks are short (a few hundred tokens each) unless padded with the long-context config; the
   padding is synthetic code, so it tests position sensitivity, not real repository understanding.
 - The position sweep uses synthetic filler code, so it measures retrieval of the task code by position, not real cross-file reasoning.
