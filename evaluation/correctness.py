@@ -281,9 +281,10 @@ def evaluate_sample(sample, response, timeout=10):
         out.update(answer_contains_expected=contains, exact_match=exact, functional_correctness=contains)
     elif et == "longcodeu":
         from evaluation.longcodeu_metrics import score as lcu_score
-        r = lcu_score(sample["subtask"], response, sample.get("answers"))
+        r = lcu_score(sample["subtask"], response, sample.get("answers"), prompt=sample.get("task"))
         out.update(longcodeu_score=r["score"], longcodeu_recall=r["recall"], longcodeu_precision=r["precision"],
-                   longcodeu_metric=r["metric"])
+                   longcodeu_metric=r["metric"], longcodeu_name_recall=r["name_recall"],
+                   longcodeu_name_precision=r["name_precision"])
         # no executable ground truth: functional_correctness stays None
     elif et == "keywords":
         cov = keyword_coverage(response, sample.get("keywords"))

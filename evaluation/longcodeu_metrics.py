@@ -21,7 +21,8 @@ from collections import Counter
 
 TASKS = ("CU_P", "CU_SA", "CU_DFA", "DRA_T1", "DRA_T2", "SRE_T1", "SRE_T2", "LDU")
 _FENCE = re.compile(r"```[^\n]*\n(.*?)```", re.S)
-_DEF = re.compile(r"^[ \t]*(?:async[ \t]+)?def[ \t]+([A-Za-z_]\w*)[ \t]*\(", re.M)
+_DEF = re.compile(r"^[ \t]*(?:async[ \t]+)?(?:def|class)[ \t]+([A-Za-z_]\w*)[ \t]*[(:]", re.M)
+_IDENT = re.compile(r"^[A-Za-z_][\w.]*$")
 _TOK = re.compile(r"[A-Za-z_]\w*|\d+|\S")
 
 _CODEBLEU = None
@@ -91,14 +92,14 @@ def strip_fences(text):
 
 
 def parse_name_list(text):
+    """Names from 'Function_names = [a, b]', a JSON/Python list, or one name per line."""
     body = strip_fences(text).strip()
-    for parse in (json.loads, ast.literal_eval):
-        try:
-            v = parse(body)
-            if isinstance(v, (list, tuple)):
-                return [str(x).strip().split("(")[0].split(".")[-1] for x in v if str(x).strip()]
-        except Exception:
-            pass
+    m = re.search(r"\[(.*?)\]", body, re.S)
+    if m:
+        items = [x.strip().strip("'\"` ") for x in m.group(1).split(",")]
+        names = [x.split("(")[0].split(".")[-1] for x in items if x]
+        if names:
+            return names
     names = []
     for line in body.splitlines():
         line = re.sub(r"^\s*(?:[-*]|\d+[.)])\s*", "", line).strip().strip("`'\",[]")
@@ -108,6 +109,23 @@ def parse_name_list(text):
     return names
 
 
+def find_unit_source(code, name):
+    """Source of `def name` / `class name` in code, ending where indentation returns to its level."""
+    m = re.search(rf"^([ \t]*)(?:async[ \t]+)?(?:def|class)[ \t]+{re.escape(name)}\b", code, re.M)
+    if not m:
+        return None
+    indent = len(m.group(1).expandtabs())
+    lines = code[m.start():].splitlines()
+    out = [lines[0]]
+    for line in lines[1:]:
+        if line.strip() and len(line) - len(line.lstrip()) <= indent and not line.lstrip().startswith((")", "]", "}")):
+            break
+        if line.strip().startswith("```"):
+            break
+        out.append(line)
+    return "\n".join(out).rstrip()
+
+
 def split_units(code):
     """Split code into (name, source) per top-level-or-method def."""
     code = strip_fences(code)
@@ -115,7 +133,8 @@ def split_units(code):
     units = []
     for i, (pos, name) in enumerate(starts):
         end = starts[i + 1][0] if i + 1 < len(starts) else len(code)
-        units.append((name, code[pos:end].strip("\n")))
+        body = re.sub(r"^[ \t]*#{3,}.*#{3,}[ \t]*$", "", code[pos:end], flags=re.M)  # '###### Top-1 ######'
+        units.append((name, body.strip("\n").rstrip()))
     return units
 
 
@@ -138,9 +157,10 @@ def _norm_line(s):
     return " ".join(s.strip().split())
 
 
-def score(task, response, ans):
+def score(task, response, ans, prompt=None):
     ref = normalize_answers(ans)
-    out = {"recall": None, "precision": None, "score": None, "metric": None}
+    out = {"recall": None, "precision": None, "score": None, "metric": None,
+           "name_recall": None, "name_precision": None}
     if task == "CU_P":
         pred, gold = parse_name_list(response), [r.strip().split("(")[0] for r in ref]
         l = _lcs(pred, gold)
@@ -156,21 +176,33 @@ def score(task, response, ans):
         s = max((code_similarity(strip_fences(response), r) for r in ref), default=0.0)
         out.update(score=s, metric=similarity_metric_name())
     elif task in ("DRA_T1", "DRA_T2", "SRE_T1", "SRE_T2"):
+        # References are usually bare unit names; the reference source is taken from the
+        # long code in the prompt so CodeBLEU compares the returned unit with the real one.
         gold = {}
         for r in ref:
-            units = split_units(r) or [(r.strip().split("(")[0], r)]
-            for name, src in units[:1]:
-                gold[name] = src
+            r = r.strip()
+            if _IDENT.match(r):
+                name = r.split(".")[-1]
+                gold[name] = find_unit_source(prompt or "", name)
+            else:
+                for name, src in split_units(r)[:1]:
+                    gold[name] = src
         pred = split_units(response)
         if not pred:  # model listed names only
             pred = [(n, "") for n in parse_name_list(response)]
-        total = 0.0
+        total, name_hits, seen = 0.0, 0, set()
         for name, src in pred:
-            if name in gold:
-                total += code_similarity(src, gold[name]) if src else 0.0
+            if name in gold and name not in seen:
+                seen.add(name)
+                name_hits += 1
+                ref_src = gold[name]
+                # source not recoverable from the prompt -> credit the correct name only
+                total += code_similarity(src, ref_src) if (src and ref_src) else 1.0
         rec = total / len(gold) if gold else 0.0
         prec = total / len(pred) if pred else 0.0
-        out.update(recall=rec, precision=prec, score=_f1(rec, prec), metric=f"{similarity_metric_name()}_by_unit")
+        out.update(recall=rec, precision=prec, score=_f1(rec, prec), metric=f"{similarity_metric_name()}_by_unit",
+                   name_recall=name_hits / len(gold) if gold else 0.0,
+                   name_precision=name_hits / len(pred) if pred else 0.0)
     elif task == "LDU":
         s = max((bleu(response, r) for r in ref), default=0.0)
         out.update(score=s, metric="bleu4")

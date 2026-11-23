@@ -110,3 +110,16 @@ def test_prepare_and_run_longcodeu(fake_hub, tmp_path, model_name, device_map):
     analyze("longcodeu_8k_full", str(tmp_path / "res"))
     by_task = pd.read_csv(tmp_path / "res/csv/longcodeu_8k_full_longcodeu_by_task.csv")
     assert set(by_task.subtask) == {"CU_P", "DRA_T1", "LDU"}
+
+
+def test_official_output_formats():
+    """Formats seen in real Qwen2.5-Coder-7B outputs on the A10G run (Nov 2026)."""
+    r = score("CU_P", "```\nFunction_names = [b, c, d]\n```", ["a", "b", "c", "d", "e"])
+    assert r["recall"] == pytest.approx(0.6) and r["precision"] == 1.0
+    prompt = "```python\n" + F1 + "\n\n" + F2 + "\nclass K:\n    def m(self):\n        return 1\n```\nInstructions"
+    resp = ("```\n###### function_1 ######\n" + F1 + "\n\n###### function_2 ######\n" + F2 +
+            "\n\n###### function_3 ######\ndef extra():\n    pass\n```")
+    r = score("DRA_T1", resp, ["load", "save"], prompt=prompt)    # references are bare names
+    assert r["name_recall"] == 1.0 and r["name_precision"] == pytest.approx(2 / 3, abs=1e-3)
+    assert r["recall"] > 0.95 and r["precision"] == pytest.approx(r["recall"] * 2 / 3, abs=1e-3)
+    assert score("SRE_T1", resp, ["K", "load"], prompt=prompt)["name_recall"] == 0.5

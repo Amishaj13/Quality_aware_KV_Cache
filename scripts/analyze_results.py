@@ -127,7 +127,10 @@ def longcodeu_chart(df, path, label, csv_path):
     d.loc[missing, "subtask"] = d.loc[missing, "sample_id"].str[4:].str.rsplit("_", n=1).str[0].str.upper()
     g = d.groupby("subtask").agg(n=("longcodeu_score", "size"), score=("longcodeu_score", "mean"),
                                  recall=("longcodeu_recall", "mean"), precision=("longcodeu_precision", "mean"),
-                                 metric=("longcodeu_metric", "first"), input_tokens=("input_tokens", "mean"))
+                                 metric=("longcodeu_metric", "first"), input_tokens=("input_tokens", "mean"),
+                                 **({"name_recall": ("longcodeu_name_recall", "mean"),
+                                     "name_precision": ("longcodeu_name_precision", "mean")}
+                                    if "longcodeu_name_recall" in d else {}))
     order = [t for t in ("CU_P", "CU_SA", "CU_DFA", "DRA_T1", "DRA_T2", "SRE_T1", "SRE_T2", "LDU") if t in g.index]
     g = g.reindex(order)
     g.round(4).to_csv(csv_path)
