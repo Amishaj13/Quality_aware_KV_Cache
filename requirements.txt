@@ -18,5 +18,7 @@ tabulate
 packaging
 boto3
 nbformat
+codebleu          # LongCodeU CU_SA / DRA / SRE scoring (falls back to BLEU if missing)
+tree-sitter-python
 # Optional, only if model.quantization: 4bit is needed:
 # bitsandbytes

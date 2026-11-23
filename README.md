@@ -16,7 +16,7 @@ bytes, scores the answers by executing hidden unit tests, and writes JSON, CSV a
 
 | Check | Where | Status |
 |---|---|---|
-| Unit tests (evaluation, configs, results, charts, inference plumbing, position sweep) | CPU, Python 3.13, transformers 5.24 and 4.46 | 34 passed, 2 GPU-only tests skipped |
+| Unit tests (evaluation, configs, results, charts, inference plumbing, position sweep, LongCodeU loader + metrics) | CPU, Python 3.13, transformers 5.24 and 4.46 | 40 passed, 2 GPU-only tests skipped |
 | End-to-end run of all 30 tasks | CPU, tiny **random-weight** Qwen2-architecture model | runs, saves, evaluates, charts (output is gibberish by design) |
 | Qwen2.5-Coder-7B on GPU | **your SageMaker instance** | **not run yet**: notebooks 01–04 do it |
 
@@ -70,8 +70,8 @@ export HF_HOME=$HOME/hf_cache     # keep the 15 GB model cache on the persistent
 |---|---|---|
 | `notebooks/01_environment_setup.ipynb` | nvidia-smi, versions, disk, `results/server_report.json`, feasibility, CPU tests | 5 min |
 | `notebooks/02_model_loading.ipynb` | download, load Qwen-7B, chat template, **first coding inference**, model tests | 15 min (download) |
-| `notebooks/03_full_cache_baseline.ipynb` | 3-sample check, 30-task baseline, optional 8K run, position sweep | 15 min – 2 h |
-| `notebooks/04_result_analysis.ipynb` | charts, summary, position chart, S3 copy, shutdown checklist | 2 min |
+| `notebooks/03_full_cache_baseline.ipynb` | 3-sample check, 30-task baseline, optional 8K run, position sweep, LongCodeU | 15 min – 3 h |
+| `notebooks/04_result_analysis.ipynb` | charts, summary, position + LongCodeU charts, S3 copy, shutdown checklist | 2 min |
 
 Shut down notebook 02's kernel before starting 03 (two copies of the model do not fit in 24 GB).
 
@@ -118,6 +118,26 @@ Each task's code is embedded in unrelated synthetic Python at the given relative
 position test from the project plan). With the full cache this gives the reference curve; later each
 compression method reruns the same sweep, so position-dependent loss can be compared directly.
 Use `--max-samples 10` or `--depths 0 0.5 1` if GPU time is short.
+
+## LongCodeU subset (real long code), full cache
+[LongCodeU](https://arxiv.org/abs/2503.04359) (Li et al., ACL 2025) has 8 long-code-understanding tasks built from
+116 real Python repositories: code unit perception (CU_P), semantic analysis (CU_SA), data-flow analysis (CU_DFA),
+dependency relations (DRA_T1/T2), semantic relations (SRE_T1/T2) and documentation (LDU). The dataset is on the Hub as
+[`longcodeu/longcodeu-dataset`](https://huggingface.co/datasets/longcodeu/longcodeu-dataset), licence **Apache-2.0**
+(per its card; the code inside comes from public repositories). It is downloaded on the instance, not committed.
+```bash
+python main.py prepare-longcodeu --inspect --tasks CU_P      # look at one raw record first
+python main.py prepare-longcodeu                             # 10 per task from the 0~8K bucket that fit 7,680 prompt tokens
+python main.py run --config configs/experiment_longcodeu.yaml   # 512 new tokens, prompts used verbatim, never truncated
+python main.py analyze --experiment-id longcodeu_8k_full     # adds a score-by-task chart
+```
+Scoring follows the paper's metric descriptions (LCS recall/precision for CU_P, exact-match lines for CU_DFA,
+CodeBLEU for CU_SA, per-unit CodeBLEU recall/precision for DRA/SRE, BLEU for LDU). The official scoring code was
+not available to compare against, so treat these as faithful re-implementations: comparable across this
+project's runs (full cache vs compressed), not necessarily to the paper's tables. Most LongCodeU inputs are far
+longer than 8K (paper average ~55K tokens). This subset uses the 0~8K bucket to match the 8K baseline budget.
+The 8~16K bucket should still fit a 24 GB GPU with the full cache (`--bucket 8~16K --max-prompt-tokens 15872`
+and `context_length: 16384`); 32K is borderline, and beyond that is where compression becomes necessary.
 
 ## Research framing (from the project plan)
 Base paper: Yuan et al., *KV Cache Compression, But What Must We Give in Return?* (EMNLP 2024 Findings),
@@ -179,11 +199,11 @@ Unavailable values are `null` (e.g. GPU memory on CPU), never estimated.
 main.py                  one entry point (report | check-gpu | download | first | run | analyze | s3 | demo)
 setup_env.sh             inspect-then-install, writes requirements-lock.txt
 configs/                 model / experiment / long-context / hardware YAML
-datasets/                sample_tasks.json + its builder; raw/ processed/ for later benchmarks
+datasets/                sample_tasks.json + builder; prepare_longcodeu.py -> processed/longcodeu_8k.json
 models/model_loader.py   tokenizer + model, loaded once
 inference/               prompt building, context budget, timed full-cache generation
 cache_methods/           CacheMethod interface; "full" implemented, six methods registered as planned
-evaluation/              correctness (AST + execution), memory, latency, text-quality metrics, QR/MR/CR/pass@1
+evaluation/              correctness (AST + execution), memory, latency, text-quality, LongCodeU metrics, QR/MR/CR/pass@1
 scripts/                 server_report, check_gpu, download_model, baseline_inference, run_experiments,
                          analyze_results, run_position_sweep, analyze_position, sync_to_s3, build_notebooks
 notebooks/               01–04 (generated by scripts/build_notebooks.py)
@@ -206,6 +226,7 @@ Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-re
 - 30 hand-written tasks are short (a few hundred tokens each) unless padded with the long-context config; the
   padding is synthetic code, so it tests position sensitivity, not real repository understanding.
 - The position sweep uses synthetic filler code, so it measures retrieval of the task code by position, not real cross-file reasoning.
+- LongCodeU metrics are re-implemented from the paper's descriptions (official scorer not checked) and only the 0~8K bucket is used.
 - Explanation tasks are scored by keyword coverage and token F1, which are rough; no LLM judge yet.
 - Code execution uses a subprocess with time/memory limits, not a security sandbox.
 - TTFT/TPOT timestamps add a CUDA sync per step (small, identical for all future methods).

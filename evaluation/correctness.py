@@ -225,6 +225,12 @@ def evaluate_sample(sample, response, timeout=10):
     elif et == "answer_match":
         contains, exact = answer_match(response, sample.get("expected_answers"))
         out.update(answer_contains_expected=contains, exact_match=exact, functional_correctness=contains)
+    elif et == "longcodeu":
+        from evaluation.longcodeu_metrics import score as lcu_score
+        r = lcu_score(sample["subtask"], response, sample.get("answers"))
+        out.update(longcodeu_score=r["score"], longcodeu_recall=r["recall"], longcodeu_precision=r["precision"],
+                   longcodeu_metric=r["metric"])
+        # no executable ground truth: functional_correctness stays None
     elif et == "keywords":
         cov = keyword_coverage(response, sample.get("keywords"))
         out["keyword_coverage"] = None if cov is None else round(cov, 4)

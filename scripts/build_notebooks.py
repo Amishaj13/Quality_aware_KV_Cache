@@ -166,6 +166,13 @@ Each task's code is placed at 0 %, 25 %, 50 %, 75 % and 100 % of a ~8K-token con
 45–75 min on L4). This is the reference curve that every compression method will later be compared against.
 Start with `--max-samples 10` if time is short."""),
     code("!{PY} scripts/run_position_sweep.py --resume"),
+    md("""## 5. LongCodeU subset (real repositories, 0~8K bucket), full KV cache
+Downloads only the 8 task folders of `longcodeu/longcodeu-dataset` (Apache-2.0), keeps 10 prompts per task that
+fit 8192 − 512 tokens with the Qwen tokenizer, and runs them with up to 512 new tokens (~80 runs, ~30–45 min on L4).
+`--inspect` prints one raw record per task first so you can check the format."""),
+    code("!{PY} datasets/prepare_longcodeu.py --inspect --tasks CU_P"),
+    code("!{PY} datasets/prepare_longcodeu.py --per-task 10\n!cat datasets/processed/longcodeu_8k_report.json"),
+    code("!{PY} scripts/run_experiments.py --config configs/experiment_longcodeu.yaml --resume"),
 ])
 
 write("04_result_analysis.ipynb", [
@@ -194,6 +201,13 @@ if glob.glob("results/json/position_full_d*.json"):
     table, chart = analyze_position("position_full")
     display(Image(filename=str(chart)))
     display(table)'''),
+    md("## LongCodeU (if you ran section 5 of notebook 03)"),
+    code('''if os.path.exists("results/json/longcodeu_8k_full.json"):
+    s3_, c3 = analyze("longcodeu_8k_full")
+    for c in c3:
+        if "longcodeu_by_task" in str(c):
+            display(Image(filename=str(c)))
+    display(pd.read_csv("results/csv/longcodeu_8k_full_longcodeu_by_task.csv"))'''),
     md("""## Copy results to S3 (existing bucket only) and shut down
 Set the bucket name, dry-run, then upload. Model weights are never uploaded."""),
     code('''import os

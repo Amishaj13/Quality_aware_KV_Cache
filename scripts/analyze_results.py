@@ -117,6 +117,34 @@ def correctness_chart(df, path, label):
     return path
 
 
+def longcodeu_chart(df, path, label, csv_path):
+    """Mean LongCodeU score (F1 of recall/precision, or CodeBLEU/BLEU) per subtask."""
+    if "longcodeu_score" not in df or df.longcodeu_score.isna().all():
+        return None
+    d = df[df.longcodeu_score.notna()]
+    g = d.groupby("subtask").agg(n=("longcodeu_score", "size"), score=("longcodeu_score", "mean"),
+                                 recall=("longcodeu_recall", "mean"), precision=("longcodeu_precision", "mean"),
+                                 metric=("longcodeu_metric", "first"), input_tokens=("input_tokens", "mean"))
+    order = [t for t in ("CU_P", "CU_SA", "CU_DFA", "DRA_T1", "DRA_T2", "SRE_T1", "SRE_T2", "LDU") if t in g.index]
+    g = g.reindex(order)
+    g.round(4).to_csv(csv_path)
+    fig, ax = plt.subplots(figsize=(8, 4.2), dpi=150)
+    bars = ax.bar(range(len(g)), 100 * g.score, width=0.6, color=COLORS["longcode"])
+    for b, (_, r) in zip(bars, g.iterrows()):
+        ax.text(b.get_x() + b.get_width() / 2, b.get_height() + 1.5, f"{100 * r.score:.0f} (n={int(r.n)})",
+                ha="center", va="bottom", fontsize=8.5, color=INK)
+    ax.set_xticks(range(len(g)))
+    ax.set_xticklabels(g.index)
+    ax.set_ylim(0, 110)
+    style(ax, "LongCodeU score by task (full KV cache)", None, "score × 100")
+    footnote(fig, label + "\nScore = F1 of recall/precision (CU_P, CU_DFA, DRA, SRE) or CodeBLEU/BLEU (CU_SA, LDU); "
+             "re-implemented metrics")
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
 def summarize(df):
     ok = df[df.status == "ok"]
 
@@ -149,6 +177,7 @@ def summarize(df):
         "functional_correctness_pct": pct(ok.functional_correctness) if "functional_correctness" in ok else None,
         "pass_at_1_pct": None if pass_at_1(df.to_dict("records")) is None else round(100 * pass_at_1(df.to_dict("records")), 1),
         "mean_decode_tokens_per_second": r(ok.decode_tokens_per_second.mean(), 2) if "decode_tokens_per_second" in ok and ok.decode_tokens_per_second.notna().any() else None,
+        "longcodeu_mean_score": r(ok.longcodeu_score.mean(), 4) if "longcodeu_score" in ok and ok.longcodeu_score.notna().any() else None,
         "functional_correctness_testable_n": int(ok.functional_correctness.notna().sum()) if len(ok) else 0,
         "unit_test_pass_rate_mean": r(ok.unit_test_pass_rate.mean()) if "unit_test_pass_rate" in ok and ok.unit_test_pass_rate.notna().any() else None,
     }
@@ -169,7 +198,8 @@ def analyze(experiment_id, results_directory="results"):
     if not src.exists():
         sys.exit(f"no results at {src}; run scripts/run_experiments.py first")
     df = pd.DataFrame(json.loads(src.read_text()))
-    for c in ("functional_correctness", "syntax_valid", "peak_allocated_gpu_bytes", "peak_reserved_gpu_bytes",
+    for c in ("longcodeu_score", "longcodeu_recall", "longcodeu_precision", "longcodeu_metric", "subtask",
+              "functional_correctness", "syntax_valid", "peak_allocated_gpu_bytes", "peak_reserved_gpu_bytes",
               "kv_cache_bytes", "ttft_seconds", "tpot_ms", "unit_test_pass_rate", "keyword_coverage",
               "input_tokens", "output_tokens", "total_inference_seconds"):
         if c not in df:
@@ -193,6 +223,7 @@ def analyze(experiment_id, results_directory="results"):
                 "seconds", c / f"{experiment_id}_output_tokens_vs_time.png", label),
         correctness_chart(ok, c / f"{experiment_id}_correctness.png", label),
     ]
+    charts.append(longcodeu_chart(ok, c / f"{experiment_id}_longcodeu_by_task.png", label, dirs["csv"] / f"{experiment_id}_longcodeu_by_task.csv"))
     summary, per_wf = summarize(df)
     pd.DataFrame([summary]).to_csv(dirs["csv"] / f"{experiment_id}_summary.csv", index=False)
     per_wf.to_csv(dirs["csv"] / f"{experiment_id}_by_workflow.csv", index=False)

@@ -6,7 +6,7 @@ from utils.paths import resolve
 
 REQUIRED = ("sample_id", "workflow", "language", "task", "context", "reference_answer",
             "expected_behavior", "max_new_tokens")
-EVAL_TYPES = ("unit_tests", "testgen", "answer_match", "keywords")
+EVAL_TYPES = ("unit_tests", "testgen", "answer_match", "keywords", "longcodeu")
 
 
 class InvalidSample(ValueError):
@@ -32,6 +32,8 @@ def validate_sample(s):
         raise InvalidSample(f"{s['sample_id']}: testgen sample needs reference_solution and buggy_solutions")
     if et == "answer_match" and not s.get("expected_answers"):
         raise InvalidSample(f"{s['sample_id']}: answer_match sample without expected_answers")
+    if et == "longcodeu" and not (s.get("subtask") and "answers" in s):
+        raise InvalidSample(f"{s['sample_id']}: longcodeu sample needs subtask and answers")
     return s
 
 

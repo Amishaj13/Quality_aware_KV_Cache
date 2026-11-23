@@ -35,7 +35,8 @@ only once a compressed run exists. Quality retention = compressed quality / full
 quality x 100 on the same samples.
 
 ## 2. Benchmarks (check version, licence and terms before use)
-LongCodeU, RepoBench, CrossCodeEval, CodeRepoQA, SWE-bench Lite, BugsInPy, TestGenEval,
+Done: LongCodeU 0~8K subset (`datasets/prepare_longcodeu.py`, Apache-2.0). Next: its 8~16K bucket (fits 24 GB
+with the full cache) and 16~32K (borderline; the natural target for compression), then RepoBench, CrossCodeEval, CodeRepoQA, SWE-bench Lite, BugsInPy, TestGenEval,
 EvalPlus. Each becomes a loader that emits the same sample schema as
 `datasets/sample_tasks.json` (task, context, hidden evaluation fields, group_id for splits).
 

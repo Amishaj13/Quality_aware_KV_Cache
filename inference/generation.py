@@ -8,7 +8,7 @@ import random
 SYSTEM_PROMPT = ("You are a careful senior Python engineer. Answer the user's question about the code. "
                  "When asked for code, return complete, runnable Python.")
 
-PROMPT_FIELDS = ("task", "context")
+PROMPT_FIELDS = ("task", "context")   # raw_prompt samples: task holds the full official prompt
 
 
 class ContextOverflow(ValueError):
@@ -16,6 +16,10 @@ class ContextOverflow(ValueError):
 
 
 def build_messages(sample, context_override=None):
+    if sample.get("raw_prompt"):
+        # benchmark prompt used verbatim (e.g. LongCodeU: code + instruction already combined);
+        # the model's own default system prompt applies
+        return [{"role": "user", "content": sample["task"]}]
     context = context_override if context_override is not None else sample["context"]
     user = f"```python\n{context.rstrip()}\n```\n\n{sample['task']}"
     return [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}]
@@ -102,6 +106,8 @@ def prepare_prompt(tokenizer, sample, cfg):
     max_new = min(max_new, e["max_new_tokens"])
     budget = e["context_length"] - max_new
     fill = cfg.get("context_fill") or {}
+    if sample.get("raw_prompt"):
+        fill = {}  # never pad or cut an official benchmark prompt
     context, filler_tokens = sample["context"], 0
     if fill.get("enabled"):
         target = min(fill["target_tokens"], budget)
@@ -111,7 +117,7 @@ def prepare_prompt(tokenizer, sample, cfg):
     original_tokens = len(ids)
     truncated = False
     if len(ids) > budget:
-        if e.get("overflow_policy", "skip") == "skip":
+        if e.get("overflow_policy", "skip") == "skip" or sample.get("raw_prompt"):
             raise ContextOverflow(f"prompt has {len(ids)} tokens; budget is {budget} "
                                   f"(context_length {e['context_length']} - max_new_tokens {max_new})")
         context = _truncate_middle(context, tokenizer, len(ids) - budget + 32)

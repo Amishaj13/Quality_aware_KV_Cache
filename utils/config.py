@@ -96,7 +96,8 @@ def validate_config(cfg):
 
     d = cfg.get("dataset") or {}
     _require(isinstance(d.get("path"), str), "dataset.path is required")
-    _require(Path(resolve(d["path"])).exists(), f"dataset file not found: {resolve(d['path'])}")
+    hint = " (build it first: python datasets/prepare_longcodeu.py)" if "longcodeu" in d["path"] else ""
+    _require(Path(resolve(d["path"])).exists(), f"dataset file not found: {resolve(d['path'])}{hint}")
     _require(d.get("split", "all") in SPLITS, f"dataset.split must be one of {SPLITS}")
     ms = d.get("max_samples")
     _require(ms is None or (isinstance(ms, int) and ms > 0), "dataset.max_samples must be a positive int or null")

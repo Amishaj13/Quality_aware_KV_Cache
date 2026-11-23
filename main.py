@@ -8,6 +8,7 @@
   python main.py analyze       # charts + summary for the configured experiment
   python main.py position      # position sweep 0/25/50/75/100 % at ~8K tokens (full cache)
   python main.py analyze-position
+  python main.py prepare-longcodeu   # download LongCodeU, build the 0~8K subset (datasets/processed/)
   python main.py s3 [--dry-run]# copy results to an existing S3 bucket
   python main.py demo          # report -> run -> analyze in one go
 """
@@ -17,11 +18,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(ROOT / "datasets"))
 
 COMMANDS = {
     "report": "server_report", "check-gpu": "check_gpu", "download": "download_model",
     "first": "baseline_inference", "run": "run_experiments", "analyze": "analyze_results",
-    "position": "run_position_sweep", "analyze-position": "analyze_position", "s3": "sync_to_s3",
+    "position": "run_position_sweep", "prepare-longcodeu": "prepare_longcodeu", "analyze-position": "analyze_position", "s3": "sync_to_s3",
 }
 
 
