@@ -6,6 +6,8 @@
   python main.py first         # one coding task end to end (first inference)
   python main.py run [args]    # full baseline over the dataset (args go to run_experiments.py)
   python main.py analyze       # charts + summary for the configured experiment
+  python main.py position      # position sweep 0/25/50/75/100 % at ~8K tokens (full cache)
+  python main.py analyze-position
   python main.py s3 [--dry-run]# copy results to an existing S3 bucket
   python main.py demo          # report -> run -> analyze in one go
 """
@@ -18,7 +20,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 COMMANDS = {
     "report": "server_report", "check-gpu": "check_gpu", "download": "download_model",
-    "first": "baseline_inference", "run": "run_experiments", "analyze": "analyze_results", "s3": "sync_to_s3",
+    "first": "baseline_inference", "run": "run_experiments", "analyze": "analyze_results",
+    "position": "run_position_sweep", "analyze-position": "analyze_position", "s3": "sync_to_s3",
 }
 
 

@@ -161,6 +161,11 @@ df[[c for c in cols if c in df]]'''),
     md("""## 3. Optional: same tasks padded to ~8K tokens (task code in the middle)
 Still the full KV cache. This is the long-context baseline that later compression methods are compared against."""),
     code("!{PY} scripts/run_experiments.py --config configs/experiment_longctx.yaml --resume"),
+    md("""## 4. Position sensitivity (Lost-in-the-Middle), full KV cache
+Each task's code is placed at 0 %, 25 %, 50 %, 75 % and 100 % of a ~8K-token context (5 × 30 runs, roughly
+45–75 min on L4). This is the reference curve that every compression method will later be compared against.
+Start with `--max-samples 10` if time is short."""),
+    code("!{PY} scripts/run_position_sweep.py --resume"),
 ])
 
 write("04_result_analysis.ipynb", [
@@ -182,6 +187,13 @@ if os.path.exists("results/json/baseline_longctx_8k_d50.json"):
     s2, c2 = analyze("baseline_longctx_8k_d50")
     for c in c2[:2]:
         display(Image(filename=str(c)))'''),
+    md("## Position sensitivity (if you ran section 4 of notebook 03)"),
+    code('''import glob
+if glob.glob("results/json/position_full_d*.json"):
+    from analyze_position import analyze as analyze_position
+    table, chart = analyze_position("position_full")
+    display(Image(filename=str(chart)))
+    display(table)'''),
     md("""## Copy results to S3 (existing bucket only) and shut down
 Set the bucket name, dry-run, then upload. Model weights are never uploaded."""),
     code('''import os

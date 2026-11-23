@@ -16,7 +16,7 @@ bytes, scores the answers by executing hidden unit tests, and writes JSON, CSV a
 
 | Check | Where | Status |
 |---|---|---|
-| Unit tests (evaluation, configs, results, charts, inference plumbing) | CPU, Python 3.13, transformers 5.24 and 4.46 | 32 passed, 2 GPU-only tests skipped |
+| Unit tests (evaluation, configs, results, charts, inference plumbing, position sweep) | CPU, Python 3.13, transformers 5.24 and 4.46 | 34 passed, 2 GPU-only tests skipped |
 | End-to-end run of all 30 tasks | CPU, tiny **random-weight** Qwen2-architecture model | runs, saves, evaluates, charts (output is gibberish by design) |
 | Qwen2.5-Coder-7B on GPU | **your SageMaker instance** | **not run yet**: notebooks 01–04 do it |
 
@@ -70,8 +70,8 @@ export HF_HOME=$HOME/hf_cache     # keep the 15 GB model cache on the persistent
 |---|---|---|
 | `notebooks/01_environment_setup.ipynb` | nvidia-smi, versions, disk, `results/server_report.json`, feasibility, CPU tests | 5 min |
 | `notebooks/02_model_loading.ipynb` | download, load Qwen-7B, chat template, **first coding inference**, model tests | 15 min (download) |
-| `notebooks/03_full_cache_baseline.ipynb` | 3-sample check, 30-task baseline, optional 8K long-context run | 15–40 min |
-| `notebooks/04_result_analysis.ipynb` | charts, summary, S3 copy, shutdown checklist | 2 min |
+| `notebooks/03_full_cache_baseline.ipynb` | 3-sample check, 30-task baseline, optional 8K run, position sweep | 15 min – 2 h |
+| `notebooks/04_result_analysis.ipynb` | charts, summary, position chart, S3 copy, shutdown checklist | 2 min |
 
 Shut down notebook 02's kernel before starting 03 (two copies of the model do not fit in 24 GB).
 
@@ -86,6 +86,7 @@ python main.py run --experiment-id baseline_001                 # 30 tasks, 8K b
 python main.py analyze --experiment-id baseline_001             # charts + summary
 python main.py run --config configs/experiment_longctx.yaml     # optional: prompts padded to ~8K
 python main.py analyze --experiment-id baseline_longctx_8k_d50
+python main.py position && python main.py analyze-position      # position sensitivity sweep
 KVR_TEST_MODEL=Qwen/Qwen2.5-Coder-7B-Instruct python -m pytest tests -v   # all 7 test groups on the real model
 ```
 Long runs survive a closed browser tab with
@@ -107,6 +108,31 @@ Check that SageMaker → Inference → Endpoints is empty.
 3. `WITH_BNB=1 bash setup_env.sh`, then `--quantization 4bit`, and a **new** `--experiment-id`.
 4. Smaller model for pipeline debugging: `--model Qwen/Qwen2.5-Coder-1.5B-Instruct --experiment-id fallback_001`.
    Charts and summaries are automatically labelled *PRELIMINARY* for anything other than bf16 Qwen-7B.
+
+## Position sensitivity (Lost-in-the-Middle), full cache
+```bash
+python main.py position                        # 0/25/50/75/100 % at ~8K tokens, 30 tasks, model loaded once
+python main.py analyze-position                # results/charts/position_full_correctness_by_position.png
+```
+Each task's code is embedded in unrelated synthetic Python at the given relative position (the
+position test from the project plan). With the full cache this gives the reference curve; later each
+compression method reruns the same sweep, so position-dependent loss can be compared directly.
+Use `--max-samples 10` or `--depths 0 0.5 1` if GPU time is short.
+
+## Research framing (from the project plan)
+Base paper: Yuan et al., *KV Cache Compression, But What Must We Give in Return?* (EMNLP 2024 Findings),
+which benchmarks KV-cache compression on LongBench and Needle-in-a-Haystack. This project narrows it to
+long-context **coding** workloads and adds position sensitivity and a recommendation step.
+Comparison formulas, ready for the first compressed run (`evaluation/comparison.py`):
+
+| | Formula |
+|---|---|
+| Quality retention | QR = Q_compressed / Q_full × 100 |
+| Memory reduction | MR = (M_full − M_compressed) / M_full × 100 |
+| Compression ratio | CR = M_full / M_compressed |
+| pass@1 (greedy) | correct code tasks / all code tasks (failed and OOM runs count as wrong) |
+
+They are not reported for the baseline, because there is nothing to compare yet.
 
 ## Configuration
 - `configs/model_config.yaml`: model, revision, dtype, attention, quantization, fallback model.
@@ -157,9 +183,9 @@ datasets/                sample_tasks.json + its builder; raw/ processed/ for la
 models/model_loader.py   tokenizer + model, loaded once
 inference/               prompt building, context budget, timed full-cache generation
 cache_methods/           CacheMethod interface; "full" implemented, six methods registered as planned
-evaluation/              correctness (AST + execution), memory, latency, text-quality metrics
+evaluation/              correctness (AST + execution), memory, latency, text-quality metrics, QR/MR/CR/pass@1
 scripts/                 server_report, check_gpu, download_model, baseline_inference, run_experiments,
-                         analyze_results, sync_to_s3, build_notebooks
+                         analyze_results, run_position_sweep, analyze_position, sync_to_s3, build_notebooks
 notebooks/               01–04 (generated by scripts/build_notebooks.py)
 results/                 raw_logs/ (JSONL, progressive)  json/  csv/  charts/
 tests/                   test_gpu, test_model, test_inference, test_evaluation, test_results
@@ -179,6 +205,7 @@ Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-re
 - No GPU result has been produced yet; everything GPU-side is written and CPU-tested only.
 - 30 hand-written tasks are short (a few hundred tokens each) unless padded with the long-context config; the
   padding is synthetic code, so it tests position sensitivity, not real repository understanding.
+- The position sweep uses synthetic filler code, so it measures retrieval of the task code by position, not real cross-file reasoning.
 - Explanation tasks are scored by keyword coverage and token F1, which are rough; no LLM judge yet.
 - Code execution uses a subprocess with time/memory limits, not a security sandbox.
 - TTFT/TPOT timestamps add a CUDA sync per step (small, identical for all future methods).
@@ -188,4 +215,4 @@ Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-re
 ## Next steps
 See [docs/ROADMAP.md](docs/ROADMAP.md): StreamingLLM and SnapKV first, then H2O, PyramidKV, KIVI
 (ported from `kivi_baseline/`), EvolKV; public benchmarks after licence checks; position
-sensitivity at 10/30/50/70/90 %; Pareto analysis; then the recommender.
+sensitivity per method (the full-cache sweep exists); Pareto analysis; then the recommender.

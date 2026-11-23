@@ -55,3 +55,25 @@ def test_resume_keeps_last_record_per_sample(tmp_path):
     w.append(new_record(experiment_id="resume_test", sample_id="python_001", status="ok"))
     rows = w.rebuild()
     assert len(rows) == 1 and rows[0]["status"] == "ok"
+
+
+def test_position_sweep_end_to_end(tmp_path, model_name, device_map):
+    """Runs the full-cache sweep at 2 depths on 3 tasks with the test model, then the chart."""
+    import run_position_sweep
+    from analyze_position import analyze as analyze_pos
+    from utils.config import load_config  # noqa: F401
+
+    import yaml
+    cfg = yaml.safe_load(open("configs/experiment_longctx.yaml"))
+    cfg["output"]["results_directory"] = str(tmp_path)
+    cfg["experiment"]["max_new_tokens"] = 16
+    cfg["experiment"]["warmup"] = False
+    cfg["context_fill"]["target_tokens"] = 1024
+    path = tmp_path / "sweep.yaml"
+    path.write_text(yaml.safe_dump(cfg))
+    rc = run_position_sweep.main(["--config", str(path), "--model", model_name, "--device-map", device_map,
+                                  "--depths", "0", "1", "--max-samples", "3", "--prefix", "pos_test"])
+    assert rc == 0
+    t, chart = analyze_pos("pos_test", str(tmp_path))
+    assert list(t.depth_pct) == [0, 100] and all(t.ok == 3) and chart.exists()
+    assert 900 <= t.mean_input_tokens.min() <= 1024

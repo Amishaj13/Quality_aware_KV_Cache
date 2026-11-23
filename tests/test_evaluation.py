@@ -113,3 +113,15 @@ def test_default_configs_are_valid():
     cfg = load_config()
     assert cfg["experiment"]["cache_method"] == "full" and cfg["experiment"]["context_length"] == 8192
     load_config("configs/experiment_longctx.yaml")
+
+
+def test_comparison_formulas():
+    from evaluation.comparison import compression_ratio, memory_reduction, pass_at_1, quality_retention
+    assert quality_retention(76, 80) == pytest.approx(95.0)       # example from the project plan
+    assert memory_reduction(8, 2) == pytest.approx(75.0)
+    assert compression_ratio(8, 2) == pytest.approx(4.0)
+    assert quality_retention(50, 0) is None and memory_reduction(None, 1) is None
+    recs = [{"eval_type": "unit_tests", "status": "ok", "functional_correctness": True},
+            {"eval_type": "testgen", "status": "oom", "functional_correctness": None},
+            {"eval_type": "keywords", "status": "ok", "functional_correctness": None}]
+    assert pass_at_1(recs) == pytest.approx(0.5)

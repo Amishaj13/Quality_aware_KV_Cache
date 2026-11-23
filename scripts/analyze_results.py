@@ -18,6 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
+from evaluation.comparison import pass_at_1  # noqa: E402
 from utils.config import WORKFLOWS, load_config  # noqa: E402
 from utils.paths import results_dirs  # noqa: E402
 
@@ -146,6 +147,8 @@ def summarize(df):
         "mean_kv_cache_mib": r(ok.kv_cache_bytes.mean() / 1024**2, 1) if ok.kv_cache_bytes.notna().any() else None,
         "syntax_valid_pct": pct(ok.syntax_valid) if "syntax_valid" in ok else None,
         "functional_correctness_pct": pct(ok.functional_correctness) if "functional_correctness" in ok else None,
+        "pass_at_1_pct": None if pass_at_1(df.to_dict("records")) is None else round(100 * pass_at_1(df.to_dict("records")), 1),
+        "mean_decode_tokens_per_second": r(ok.decode_tokens_per_second.mean(), 2) if "decode_tokens_per_second" in ok and ok.decode_tokens_per_second.notna().any() else None,
         "functional_correctness_testable_n": int(ok.functional_correctness.notna().sum()) if len(ok) else 0,
         "unit_test_pass_rate_mean": r(ok.unit_test_pass_rate.mean()) if "unit_test_pass_rate" in ok and ok.unit_test_pass_rate.notna().any() else None,
     }

@@ -77,7 +77,8 @@ def build_overrides(a):
     return o
 
 
-def run(cfg, resume=False, overwrite=False):
+def run(cfg, resume=False, overwrite=False, loaded=None):
+    """Run one experiment. `loaded` = (model, tok, info) reuses an already loaded model (position sweep)."""
     e, d = cfg["experiment"], cfg["dataset"]
     dirs = results_dirs(cfg["output"].get("results_directory", "results"))
     writer = ResultWriter(dirs, e["experiment_id"])
@@ -108,9 +109,13 @@ def run(cfg, resume=False, overwrite=False):
     if not torch.cuda.is_available() and cfg["model"].get("device_map", "cuda") != "cpu":
         sys.exit("No CUDA GPU detected. Start a GPU instance (e.g. ml.g6.xlarge). "
                  "For a CPU pipeline check use --device-map cpu with a tiny model.")
-    log(f"loading {cfg['model']['name']} ...")
+    if loaded is not None:
+        model, tok, info = loaded
+    else:
+        log(f"loading {cfg['model']['name']} ...")
     try:
-        model, tok, info = load_model(cfg)
+        if loaded is None:
+            model, tok, info = load_model(cfg)
     except ModelLoadError as err:
         log(f"MODEL LOAD FAILED: {err}")
         for s in samples:

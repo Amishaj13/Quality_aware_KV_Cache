@@ -17,6 +17,18 @@ validator rejects the name, so no run can silently fall back to the full cache.
 | KIVI | 2/4-bit asymmetric K/V quantization | `kivi_baseline/` already measures it on Llama-3.1-8B (pinned to transformers 4.43). Port to Qwen2 or use HF's quantized cache as a stand-in; record which |
 | EvolKV | evolutionary search of layer budgets | runs on top of a budgeted eviction method |
 
+Formulas (`evaluation/comparison.py`, tested):
+QR = Q_compressed / Q_full x 100, MR = (M_full - M_compressed) / M_full x 100, CR = M_full / M_compressed.
+Q = pass@1 / functional-correctness rate on the same samples; M = measured KV-cache bytes
+(peak GPU memory reported separately, since weights dominate it at batch 1).
+
+Base paper: Yuan et al., *KV Cache Compression, But What Must We Give in Return? A Comprehensive
+Benchmark of Long Context Capable Approaches* (EMNLP 2024 Findings). It compares KIVI, FlexGen,
+StreamingLLM, H2O, InfLLM, LLMLingua-2 and linear-time models on LongBench + Needle-in-a-Haystack.
+SnapKV, PyramidKV and EvolKV are not in its main comparison, so they extend it; LongCodeU is a
+separate coding benchmark. Prefer original implementations or validated integrations over
+re-implementations.
+
 Every result row already carries `cache_method`, `kv_cache_bytes` (measured) and
 `kv_cache_bytes_theoretical_full`, so KV reduction = 1 - measured / full, computed
 only once a compressed run exists. Quality retention = compressed quality / full-cache
@@ -28,7 +40,8 @@ EvalPlus. Each becomes a loader that emits the same sample schema as
 `datasets/sample_tasks.json` (task, context, hidden evaluation fields, group_id for splits).
 
 ## 3. Evaluations
-- Position sensitivity: `context_fill.depth` at 0.1 / 0.3 / 0.5 / 0.7 / 0.9 (already supported).
+- Position sensitivity: the full-cache sweep at 0 / 25 / 50 / 75 / 100 % already exists
+  (`scripts/run_position_sweep.py`); rerun it per method and compare the curves.
 - Longer contexts: 16K / 32K (Qwen2.5-Coder supports 32K natively; 24 GB GPUs may OOM at 32K in bf16 — record OOM rows).
 - Retrieval precision/recall/F1 and cross-file dependency preservation (NetworkX import graph of repo tasks).
 - Long-generation stability at 256 / 512 / 1024 new tokens.
