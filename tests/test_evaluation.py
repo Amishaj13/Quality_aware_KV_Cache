@@ -125,3 +125,29 @@ def test_comparison_formulas():
             {"eval_type": "testgen", "status": "oom", "functional_correctness": None},
             {"eval_type": "keywords", "status": "ok", "functional_correctness": None}]
     assert pass_at_1(recs) == pytest.approx(0.5)
+
+
+def test_testgen_supports_pytest_features(samples):
+    """Model-written suites commonly use parametrize, classes and fixtures."""
+    s = next(x for x in samples if x["eval_type"] == "testgen" and "clamp" in x["task"])
+    resp = ("```python\nimport pytest\nfrom solution import clamp\n\n"
+            "@pytest.mark.parametrize('x, lo, hi, want', [(5, 0, 10, 5), (-1, 0, 10, 0), (11, 0, 10, 10)])\n"
+            "def test_values(x, lo, hi, want):\n    assert clamp(x, lo, hi) == want\n\n"
+            "@pytest.fixture\ndef bounds():\n    return (5, 0)\n\n"
+            "class TestErrors:\n    def test_bad(self, bounds):\n        with pytest.raises(ValueError):\n"
+            "            clamp(1, *bounds)\n```")
+    ev = evaluate_sample(s, resp)
+    assert ev["eval_details"]["passes_on_reference"], ev
+    assert ev["tests_total"] == 4 and ev["functional_correctness"] is True
+
+
+def test_testgen_truncated_tail_is_dropped(samples):
+    s = next(x for x in samples if x["eval_type"] == "testgen" and "clamp" in x["task"])
+    resp = ("```python\nimport pytest\nfrom solution import clamp\n\n"
+            "def test_low_high():\n    assert clamp(-1, 0, 10) == 0\n    assert clamp(11, 0, 10) == 10\n\n"
+            "def test_bad():\n    with pytest.raises(ValueError):\n        clamp(1, 5, 0)\n\n"
+            "def test_unfinished():\n    assert clamp(3, 0,")          # cut off by max_new_tokens
+    ev = evaluate_sample(s, resp)
+    assert ev["syntax_valid"] is False                  # reported honestly
+    assert ev["eval_details"]["truncated_tail_dropped"] is True
+    assert ev["functional_correctness"] is True         # complete tests still scored

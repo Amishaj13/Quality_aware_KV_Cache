@@ -165,13 +165,47 @@ print(%r + _kvr_json.dumps(_kvr_out))
 ''' % RESULT_MARK
 
 
-def run_generated_tests(test_code, implementation, module_name="solution", timeout=10):
+def _run_with_pytest(test_code, implementation, module_name, timeout):
+    """Run generated tests with real pytest (supports parametrize, fixtures, classes, raises)."""
+    with tempfile.TemporaryDirectory(prefix="kvr_tg_") as tmp:
+        with open(os.path.join(tmp, f"{module_name}.py"), "w") as f:
+            f.write(implementation)
+        with open(os.path.join(tmp, "test_generated.py"), "w") as f:
+            f.write(test_code)
+        env = {"PATH": os.environ.get("PATH", ""), "PYTHONDONTWRITEBYTECODE": "1", "PYTHONHASHSEED": "0",
+               "PYTHONPATH": tmp, "HOME": tmp}
+        cmd = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:randomly",
+               "--rootdir", tmp, "-o", "addopts=", "test_generated.py"]
+        try:
+            proc = subprocess.run(cmd, cwd=tmp, env=env, stdin=subprocess.DEVNULL, capture_output=True,
+                                  text=True, timeout=timeout, preexec_fn=_limits if os.name == "posix" else None)
+        except subprocess.TimeoutExpired:
+            return {"all_passed": False, "collected": 0, "passed": 0, "status": "timeout", "errors": ["timeout"]}
+    out = proc.stdout + proc.stderr
+    counts = {k: int(v) for v, k in re.findall(r"(\d+) (passed|failed|error|errors)", out)}
+    passed = counts.get("passed", 0)
+    failed = counts.get("failed", 0) + counts.get("error", 0) + counts.get("errors", 0)
+    collected = passed + failed
+    errors = [l.strip() for l in out.splitlines() if l.startswith(("FAILED", "ERROR", "E "))][:5]
+    # pytest exit codes: 0 all passed, 1 some failed, 2 interrupted/collection error, 5 no tests collected
+    status = {0: "ok", 1: "failed", 2: "collection_error", 5: "no_tests"}.get(proc.returncode, f"exit_{proc.returncode}")
+    return {"all_passed": proc.returncode == 0 and passed > 0, "collected": collected, "passed": passed,
+            "status": status, "errors": errors or ([out.strip().splitlines()[-1]] if out.strip() else [])}
+
+
+def run_generated_tests(test_code, implementation, module_name="solution", timeout=30):
     """Run model-written tests against an implementation (importable as `module_name`).
 
-    A test suite "passes" if its module-level code runs and every collected test_*
-    function passes. Suites with no test functions count as passing only if they ran
-    top-level asserts without error (some models write bare asserts).
+    Uses real pytest when it is installed (the normal case), so parametrize, fixtures,
+    test classes and pytest.raises all behave as they would for a developer. Falls back to
+    a minimal in-process runner otherwise. A suite "passes" only if at least one test ran and
+    every test passed.
     """
+    try:
+        import pytest  # noqa: F401
+        return _run_with_pytest(test_code, implementation, module_name, timeout)
+    except ImportError:
+        pass
     source = (f"_KVR_IMPL = {implementation!r}\n_KVR_TESTS = {test_code!r}\n_KVR_MODULE = {module_name!r}\n"
               + _TESTGEN_HARNESS)
     res, err, status = _run_python(source, timeout)
@@ -182,6 +216,21 @@ def run_generated_tests(test_code, implementation, module_name="solution", timeo
     all_passed = res["top_level_ok"] and res["passed"] == res["collected"] and (res["collected"] > 0 or has_asserts)
     return {"all_passed": all_passed, "collected": res["collected"], "passed": res["passed"],
             "status": status, "errors": res["errors"][:5]}
+
+
+def salvage_truncated(code):
+    """If generation hit max_new_tokens mid-test, drop the unfinished tail so the complete
+    tests can still run. Returns (code, salvaged_flag)."""
+    if syntax_valid(code):
+        return code, False
+    lines = code.splitlines()
+    # cut back to the start of the last top-level def/class/decorator and retry
+    for i in range(len(lines) - 1, 0, -1):
+        if re.match(r"(def |class |@|async def )", lines[i]):
+            candidate = "\n".join(lines[:i]).rstrip() + "\n"
+            if syntax_valid(candidate) and re.search(r"^(async )?def test", candidate, re.M):
+                return candidate, True
+    return code, False
 
 
 def evaluate_sample(sample, response, timeout=10):
@@ -209,17 +258,20 @@ def evaluate_sample(sample, response, timeout=10):
     elif et == "testgen":
         code = extract_code(response)
         out["syntax_valid"] = syntax_valid(code)
-        if out["syntax_valid"]:
+        code, salvaged = salvage_truncated(code)
+        if syntax_valid(code):
             mod = sample.get("module_name", "solution")
-            good = run_generated_tests(code, sample["reference_solution"], mod, timeout)
-            bugs = [run_generated_tests(code, b, mod, timeout) for b in sample.get("buggy_solutions", [])]
+            tg_timeout = max(timeout, 30)  # pytest start-up takes ~1 s
+            good = run_generated_tests(code, sample["reference_solution"], mod, tg_timeout)
+            bugs = [run_generated_tests(code, b, mod, tg_timeout) for b in sample.get("buggy_solutions", [])]
             caught = sum(1 for b in bugs if not b["all_passed"])
             # valid tests must pass on the correct implementation and catch every planted bug
             out.update(functional_correctness=bool(good["all_passed"] and bugs and caught == len(bugs)),
                        tests_passed=good["passed"], tests_total=good["collected"],
                        unit_test_pass_rate=round(good["passed"] / good["collected"], 4) if good["collected"] else None,
                        eval_details={"passes_on_reference": good["all_passed"], "reference_errors": good["errors"],
-                                     "bugs_caught": caught, "bugs_total": len(bugs)})
+                                     "bugs_caught": caught, "bugs_total": len(bugs),
+                                     "truncated_tail_dropped": salvaged})
         else:
             out.update(functional_correctness=False, eval_details={"exec_status": "syntax_error"})
     elif et == "answer_match":
