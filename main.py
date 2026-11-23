@@ -9,6 +9,7 @@
   python main.py position      # position sweep 0/25/50/75/100 % at ~8K tokens (full cache)
   python main.py analyze-position
   python main.py rescore --experiment-id ID   # re-score saved responses (no GPU needed)
+  python main.py show-failures --experiment-id ID [--workflow testgen]
   python main.py prepare-longcodeu   # download LongCodeU, build the 0~8K subset (datasets/processed/)
   python main.py s3 [--dry-run]# copy results to an existing S3 bucket
   python main.py demo          # report -> run -> analyze in one go
@@ -25,7 +26,7 @@ COMMANDS = {
     "report": "server_report", "check-gpu": "check_gpu", "download": "download_model",
     "first": "baseline_inference", "run": "run_experiments", "analyze": "analyze_results",
     "position": "run_position_sweep", "prepare-longcodeu": "prepare_longcodeu",
-    "rescore": "rescore", "analyze-position": "analyze_position", "s3": "sync_to_s3",
+    "rescore": "rescore", "show-failures": "show_failures", "analyze-position": "analyze_position", "s3": "sync_to_s3",
 }
 
 

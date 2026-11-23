@@ -172,8 +172,10 @@ def _run_with_pytest(test_code, implementation, module_name, timeout):
             f.write(implementation)
         with open(os.path.join(tmp, "test_generated.py"), "w") as f:
             f.write(test_code)
+        # PYTEST_DISABLE_PLUGIN_AUTOLOAD: images like SageMaker Distribution ship many pytest plugins
+        # (anyio, langsmith, ...) whose imports can exceed the memory/time limits or change behaviour
         env = {"PATH": os.environ.get("PATH", ""), "PYTHONDONTWRITEBYTECODE": "1", "PYTHONHASHSEED": "0",
-               "PYTHONPATH": tmp, "HOME": tmp}
+               "PYTHONPATH": tmp, "HOME": tmp, "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"}
         cmd = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:randomly",
                "--rootdir", tmp, "-o", "addopts=", "test_generated.py"]
         try:
