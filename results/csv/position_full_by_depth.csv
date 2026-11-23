@@ -1,0 +1,6 @@
+depth_pct,n,ok,correct_pct,pass_at_1_pct,mean_input_tokens,mean_ttft_seconds,longcode_correct_pct,completion_correct_pct,repoqa_correct_pct,debugging_correct_pct,testgen_correct_pct
+0,30,30,57.7,61.1,7631.0,1.9653,66.7,83.3,40.0,66.7,33.3
+25,30,30,50.0,44.4,7631.0,1.9656,66.7,83.3,60.0,50.0,0.0
+50,30,30,61.5,66.7,7631.0,1.9655,66.7,83.3,40.0,66.7,50.0
+75,30,30,57.7,61.1,7631.0,1.9654,66.7,83.3,40.0,66.7,33.3
+100,30,30,69.2,72.2,7631.0,1.9652,66.7,83.3,60.0,83.3,50.0

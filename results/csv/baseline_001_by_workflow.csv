@@ -1,0 +1,6 @@
+workflow,n,functional_correctness_pct,syntax_valid_pct,mean_keyword_coverage,mean_inference_seconds,mean_input_tokens
+completion,6,100.0,100.0,,5.716,116.3
+debugging,6,83.3,100.0,,2.589,134.5
+longcode,6,66.7,,0.833,6.278,395.7
+repoqa,6,40.0,,0.8,4.554,377.7
+testgen,6,0.0,66.7,,7.812,171.7

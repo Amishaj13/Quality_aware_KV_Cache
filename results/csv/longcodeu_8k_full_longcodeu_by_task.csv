@@ -1,0 +1,9 @@
+subtask,n,score,recall,precision,metric,input_tokens,name_recall,name_precision
+CU_P,10,0.9081,0.8531,0.9923,lcs,4293.1,,
+CU_SA,10,0.7238,,,codebleu,4788.1,,
+CU_DFA,10,0.327,1.0,0.1992,exact_match_lines,2758.2,,
+DRA_T1,10,0.3983,0.4245,0.3826,codebleu_by_unit,5211.3,0.9,0.6583
+DRA_T2,10,0.2011,0.3213,0.1671,codebleu_by_unit,5130.5,0.4,0.1933
+SRE_T1,10,0.4469,0.4246,0.5127,codebleu_by_unit,4764.1,0.535,0.75
+SRE_T2,10,0.4308,0.3905,0.5542,codebleu_by_unit,5105.2,0.515,0.8567
+LDU,10,0.7009,,,bleu4,3551.6,,

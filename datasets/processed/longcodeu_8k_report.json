@@ -1,0 +1,65 @@
+{
+  "source": "longcodeu/longcodeu-dataset",
+  "licence": "Apache-2.0 (dataset card)",
+  "bucket": "0~8K",
+  "max_prompt_tokens": 7680,
+  "tokenizer": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "tasks": {
+    "CU_P": {
+      "in_bucket_examined": 10,
+      "kept": 10,
+      "skipped_too_long": 0,
+      "skipped_invalid": 0,
+      "mean_prompt_tokens": 4293
+    },
+    "CU_SA": {
+      "in_bucket_examined": 11,
+      "kept": 10,
+      "skipped_too_long": 1,
+      "skipped_invalid": 0,
+      "mean_prompt_tokens": 4788
+    },
+    "CU_DFA": {
+      "in_bucket_examined": 10,
+      "kept": 10,
+      "skipped_too_long": 0,
+      "skipped_invalid": 0,
+      "mean_prompt_tokens": 2758
+    },
+    "DRA_T1": {
+      "in_bucket_examined": 10,
+      "kept": 10,
+      "skipped_too_long": 0,
+      "skipped_invalid": 0,
+      "mean_prompt_tokens": 5211
+    },
+    "DRA_T2": {
+      "in_bucket_examined": 10,
+      "kept": 10,
+      "skipped_too_long": 0,
+      "skipped_invalid": 0,
+      "mean_prompt_tokens": 5130
+    },
+    "SRE_T1": {
+      "in_bucket_examined": 13,
+      "kept": 10,
+      "skipped_too_long": 3,
+      "skipped_invalid": 0,
+      "mean_prompt_tokens": 4764
+    },
+    "SRE_T2": {
+      "in_bucket_examined": 13,
+      "kept": 10,
+      "skipped_too_long": 3,
+      "skipped_invalid": 0,
+      "mean_prompt_tokens": 5105
+    },
+    "LDU": {
+      "in_bucket_examined": 10,
+      "kept": 10,
+      "skipped_too_long": 0,
+      "skipped_invalid": 0,
+      "mean_prompt_tokens": 3552
+    }
+  }
+}

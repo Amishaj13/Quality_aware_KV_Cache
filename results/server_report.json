@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-11-23T13:13:15+00:00",
+  "sagemaker_environment": {
+    "type": "SageMaker Studio (CodeEditor)",
+    "evidence": [
+      "/opt/ml/metadata/resource-metadata.json"
+    ],
+    "metadata": {
+      "AppType": "CodeEditor",
+      "DomainId": "d-vv8cky2ikkxy",
+      "SpaceName": "quickstart-gpu-j365gy",
+      "ResourceName": "default",
+      "AppImageVersion": ""
+    }
+  },
+  "aws_region": "us-east-1",
+  "aws_region_source": "env AWS_REGION",
+  "instance_type": null,
+  "instance_type_source": "unavailable (check the Studio space / notebook settings page)",
+  "os": {
+    "platform": "Linux-6.12.115-140.210.amzn2023.x86_64-x86_64-with-glibc2.39",
+    "release": "PRETTY_NAME=\"Ubuntu 24.04.5 LTS\"\nNAME=\"Ubuntu\"",
+    "kernel": "6.12.115-140.210.amzn2023.x86_64"
+  },
+  "python": {
+    "version": "3.13.18",
+    "executable": "/opt/conda/bin/python"
+  },
+  "packages": {
+    "torch": "2.12.0",
+    "transformers": "5.14.1",
+    "accelerate": "1.16.0",
+    "safetensors": "0.8.0",
+    "tokenizers": "0.22.2",
+    "huggingface_hub": "1.16.1",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "matplotlib": "3.11.2",
+    "scipy": "1.18.1",
+    "psutil": "7.2.2",
+    "tqdm": "4.70.1",
+    "pytest": "9.2.0",
+    "networkx": "3.7",
+    "pyyaml": "6.0.3",
+    "bitsandbytes": null,
+    "flash_attn": null,
+    "boto3": "1.43.117",
+    "sagemaker": null
+  },
+  "gpu": {
+    "cuda_available": true,
+    "devices": [
+      {
+        "index": 0,
+        "name": "NVIDIA A10G",
+        "compute_capability": "8.6",
+        "total_vram_gib": 22.06,
+        "free_vram_gib": 21.81,
+        "multiprocessors": 80
+      }
+    ],
+    "torch": "2.12.0",
+    "torch_cuda_runtime": "13.0",
+    "cudnn": 92801,
+    "bf16_supported": true
+  },
+  "nvidia_smi": {
+    "available": true,
+    "query": "NVIDIA A10G, 595.112.07, 23028 MiB, 259 MiB, 22332 MiB, 8.6",
+    "driver_cuda_version": "13.2",
+    "full": "Mon Nov 23 13:13:17 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 595.112.07             Driver Version: 595.112.07     CUDA Version: 13.2     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA A10G                    On  |   00000000:00:1E.0 Off |                    0 |\n|  0%   32C    P0             59W /  300W |     259MiB /  23028MiB |      2%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A            3121      C   python                                  250MiB |\n+-----------------------------------------------------------------------------------------+"
+  },
+  "memory_disk": {
+    "ram_total_gib": 15.42,
+    "ram_available_gib": 11.06,
+    "cpu_count": 4,
+    "disk": {
+      "project": {
+        "path": "/home/sagemaker-user/kv_cache_research",
+        "total_gib": 95.8,
+        "free_gib": 94.9
+      },
+      "home": {
+        "path": "/home/sagemaker-user",
+        "total_gib": 95.8,
+        "free_gib": 94.9
+      },
+      "hf_cache": {
+        "path": "/home/sagemaker-user/.cache/huggingface",
+        "total_gib": 95.8,
+        "free_gib": 94.9
+      },
+      "tmp": {
+        "path": "/tmp",
+        "total_gib": 37.0,
+        "free_gib": 37.0
+      }
+    },
+    "df_h": "Filesystem      Size  Used Avail Use% Mounted on\noverlay          37G  6.6M   37G   1% /\ntmpfs            64M     0   64M   0% /dev\nshm             1.8G  4.0K  1.8G   1% /dev/shm\n/dev/nvme2n1     96G  937M   95G   1% /home/sagemaker-user\n/dev/nvme1n1    233G  1.7G  232G   1% /mnt/sagemaker-nvme\n/dev/nvme0n1p1  180G   97G   84G  54% /usr/bin/nvidia-smi\ntmpfs           7.8G   12K  7.8G   1% /proc/driver/nvidia\ntmpfs           3.1G  9.2M  3.1G   1% /run/nvidia-persistenced/socket\ntmpfs           4.0K     0  4.0K   0% /proc/acpi"
+  },
+  "network": {
+    "internet": true,
+    "hf_token_present": true,
+    "hf_model_accessible": true,
+    "hf_model_sha": "c03e6d358207e414f1eca0bb1891e29f1db0e242",
+    "hf_model_safetensors_gib": 14.19,
+    "hf_model_gated": false
+  },
+  "target_model": "Qwen/Qwen2.5-Coder-7B-Instruct"
+}

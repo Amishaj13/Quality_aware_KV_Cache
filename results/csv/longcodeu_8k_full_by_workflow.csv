@@ -1,0 +1,3 @@
+workflow,n,functional_correctness_pct,syntax_valid_pct,mean_keyword_coverage,mean_inference_seconds,mean_input_tokens
+longcode,40,,,,6.904,3847.8
+repoqa,40,,,,16.01,5052.8
