@@ -33,23 +33,50 @@ WORKFLOW = {"CU_P": "longcode", "CU_SA": "longcode", "CU_DFA": "longcode", "LDU"
             "DRA_T1": "repoqa", "DRA_T2": "repoqa", "SRE_T1": "repoqa", "SRE_T2": "repoqa"}
 
 
-def iter_task_records(task, local_dir=None, revision="main"):
-    """Yield raw records of one task, from a local copy or the Hub (download is cached)."""
+_HUB_FILES = None
+
+
+def _hub_files(revision):
+    global _HUB_FILES
+    if _HUB_FILES is None:
+        from huggingface_hub import HfApi
+        _HUB_FILES = HfApi(token=os.environ.get("HF_TOKEN") or None).list_repo_files(
+            REPO, repo_type="dataset", revision=revision)
+    return _HUB_FILES
+
+
+def _num(name):
+    stem = Path(name).stem
+    return int(stem) if stem.isdigit() else 10**9
+
+
+def iter_task_records(task, local_dir=None, revision="main", seed=0):
+    """Yield raw records of one task, one file at a time, in a seeded random file order.
+
+    From the Hub, files are fetched lazily (and cached), so a 10-sample subset downloads a
+    few dozen small files instead of all ~500 per task. That avoids Hugging Face's 429
+    rate limit, which a full snapshot of thousands of small files triggers.
+    """
     if local_dir:
-        files = sorted(Path(local_dir, "data", task).glob("*.jsonl"))
+        files = sorted(Path(local_dir, "data", task).glob("*.jsonl"), key=lambda f: _num(f.name))
+        if not files:
+            raise FileNotFoundError(f"no files for task {task} in {local_dir}")
+        random.Random(seed).shuffle(files)
+        paths = (str(f) for f in files)
     else:
-        from huggingface_hub import snapshot_download
-        path = snapshot_download(REPO, repo_type="dataset", revision=revision,
-                                 allow_patterns=[f"data/{task}/*.jsonl"],
-                                 token=os.environ.get("HF_TOKEN") or None)
-        files = sorted(Path(path, "data", task).glob("*.jsonl"))
-    if not files:
-        raise FileNotFoundError(f"no files for task {task}")
-    for f in files:
-        for line in f.read_text().splitlines():
+        from huggingface_hub import hf_hub_download
+        names = sorted((f for f in _hub_files(revision) if f.startswith(f"data/{task}/") and f.endswith(".jsonl")),
+                       key=_num)
+        if not names:
+            raise FileNotFoundError(f"no files for task {task} on the Hub")
+        random.Random(seed).shuffle(names)
+        token = os.environ.get("HF_TOKEN") or None
+        paths = (hf_hub_download(REPO, n, repo_type="dataset", revision=revision, token=token) for n in names)
+    for path in paths:
+        for line in Path(path).read_text().splitlines():
             if line.strip():
                 rec = json.loads(line)
-                rec.setdefault("_file", f.name)
+                rec.setdefault("_file", Path(path).name)
                 yield rec
 
 
@@ -95,7 +122,7 @@ def main(argv=None):
 
     if a.inspect:
         for t in a.tasks:
-            rec = next(iter_task_records(t, a.local_dir))
+            rec = next(iter_task_records(t, a.local_dir, seed=a.seed))
             print(f"== {t}: keys {list(rec)}")
             print({k: (str(v)[:300] + "...") if len(str(v)) > 300 else v for k, v in rec.items()})
         return 0
@@ -110,16 +137,14 @@ def main(argv=None):
             ids = ids["input_ids"]
         return len(ids)
 
-    rng = random.Random(a.seed)
     out, report = [], {"source": REPO, "licence": "Apache-2.0 (dataset card)", "bucket": a.bucket,
                        "max_prompt_tokens": a.max_prompt_tokens, "tokenizer": a.tokenizer, "tasks": {}}
     for t in a.tasks:
-        recs = [r for r in iter_task_records(t, a.local_dir) if r.get("context_length") == a.bucket]
-        rng.shuffle(recs)
-        kept, too_long, bad = [], 0, 0
-        for r in recs:
-            if len(kept) >= a.per_task:
-                break
+        kept, too_long, bad, seen = [], 0, 0, 0
+        for r in iter_task_records(t, a.local_dir, seed=a.seed):
+            if r.get("context_length") != a.bucket:
+                continue
+            seen += 1
             if not r.get("prompt") or r.get("ans") in (None, "", []):
                 bad += 1
                 continue
@@ -128,11 +153,13 @@ def main(argv=None):
                 too_long += 1
                 continue
             kept.append(to_sample(t, r, n))
-        report["tasks"][t] = {"in_bucket": len(recs), "kept": len(kept), "skipped_too_long": too_long,
+            if len(kept) >= a.per_task:
+                break
+        report["tasks"][t] = {"in_bucket_examined": seen, "kept": len(kept), "skipped_too_long": too_long,
                               "skipped_invalid": bad,
                               "mean_prompt_tokens": round(sum(s["prompt_tokens_estimate"] for s in kept) / len(kept))
                               if kept else None}
-        print(f"{t:7s} bucket={len(recs):4d} kept={len(kept):3d} too_long={too_long} invalid={bad}")
+        print(f"{t:7s} examined={seen:4d} kept={len(kept):3d} too_long={too_long} invalid={bad}")
         out.extend(kept)
     dest = ROOT / a.out
     dest.parent.mkdir(parents=True, exist_ok=True)

@@ -47,6 +47,12 @@ def main(argv=None):
     if a.target_tokens:
         ov["context_fill"]["target_tokens"] = a.target_tokens
     base = load_config(a.config, a.model_config, ov)
+    import torch
+    if torch.cuda.is_available():
+        free, total = torch.cuda.mem_get_info()
+        if total - free > 2 * 1024**3:
+            sys.exit(f"Another process is already using {(total - free) / 1024**3:.1f} GiB of the GPU; "
+                     "wait for it to finish (check with nvidia-smi).")
     log(f"loading {base['model']['name']} once for {len(a.depths)} depths ...")
     loaded = load_model(base)
     rc = 0

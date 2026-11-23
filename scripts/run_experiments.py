@@ -55,6 +55,7 @@ def parse_args(argv=None):
     p.add_argument("--device-map", help="cuda | auto | cpu (cpu only for tiny debugging models)")
     p.add_argument("--resume", action="store_true", help="skip samples with status ok in the existing log")
     p.add_argument("--overwrite", action="store_true", help="delete earlier results for this experiment_id")
+    p.add_argument("--allow-shared-gpu", action="store_true", help="start even if another process holds GPU memory")
     return p.parse_args(argv)
 
 
@@ -77,7 +78,7 @@ def build_overrides(a):
     return o
 
 
-def run(cfg, resume=False, overwrite=False, loaded=None):
+def run(cfg, resume=False, overwrite=False, loaded=None, allow_shared_gpu=False):
     """Run one experiment. `loaded` = (model, tok, info) reuses an already loaded model (position sweep)."""
     e, d = cfg["experiment"], cfg["dataset"]
     dirs = results_dirs(cfg["output"].get("results_directory", "results"))
@@ -109,6 +110,12 @@ def run(cfg, resume=False, overwrite=False, loaded=None):
     if not torch.cuda.is_available() and cfg["model"].get("device_map", "cuda") != "cpu":
         sys.exit("No CUDA GPU detected. Start a GPU instance (e.g. ml.g6.xlarge). "
                  "For a CPU pipeline check use --device-map cpu with a tiny model.")
+    if loaded is None and torch.cuda.is_available() and not allow_shared_gpu:
+        free, total = torch.cuda.mem_get_info()
+        if total - free > 2 * 1024**3:
+            sys.exit(f"Another process is already using {(total - free) / 1024**3:.1f} GiB of the GPU "
+                     "(probably another experiment). Two copies of the model do not fit; wait for it to finish "
+                     "(check with nvidia-smi), or pass --allow-shared-gpu if you are sure.")
     if loaded is not None:
         model, tok, info = loaded
     else:
@@ -197,7 +204,7 @@ def run(cfg, resume=False, overwrite=False, loaded=None):
 def main(argv=None):
     a = parse_args(argv)
     cfg = load_config(a.config, a.model_config, build_overrides(a))
-    return run(cfg, resume=a.resume, overwrite=a.overwrite)
+    return run(cfg, resume=a.resume, overwrite=a.overwrite, allow_shared_gpu=a.allow_shared_gpu)
 
 
 if __name__ == "__main__":
