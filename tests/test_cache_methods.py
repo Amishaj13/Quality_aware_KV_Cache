@@ -267,6 +267,21 @@ def test_offload_matches_full_cache_and_moves_kv_to_cpu():
     assert stats["kv_cache_cpu_bytes"] >= 3 * total // 4
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="offloading needs a CUDA GPU")
+def test_offload_matches_full_cache_when_gpu_is_busy():
+    """A wider, deeper model and a long prompt, so the GPU runs behind the CPU like with the
+    7B model. Stream/allocator races in offloading only show up in that situation."""
+    from transformers import Qwen2Config, Qwen2ForCausalLM
+    torch.manual_seed(0)
+    model = Qwen2ForCausalLM(Qwen2Config(vocab_size=2000, hidden_size=1024, intermediate_size=4096,
+                                         num_hidden_layers=12, num_attention_heads=16, num_key_value_heads=4,
+                                         max_position_embeddings=8192)).to("cuda", torch.bfloat16).eval()
+    ids = torch.randint(0, 2000, (1, 3000), device="cuda")
+    full, _ = generate(model, get_cache_method("full", {}), ids, n=40)
+    off, _ = generate(model, get_cache_method("offload", {}), ids, n=40)
+    assert off == full
+
+
 @pytest.mark.parametrize("impl", ["eager", "sdpa"])
 def test_streaming_decode_equals_masked_full_attention(impl):
     """One decoding step with the StreamingLLM cache gives the same logits as the full cache
