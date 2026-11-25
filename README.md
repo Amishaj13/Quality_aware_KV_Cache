@@ -147,7 +147,7 @@ These baselines plug into the same runner, so every number is measured exactly l
 | **KIVI** (Liu et al., ICML 2024) | stores K/V in 4 or 2 bits: keys per channel, values per token, the newest <128 tokens stay 16-bit | `kivi4`, `kivi2` |
 | **SnapKV** (Li et al., NeurIPS 2024) | after the prompt is read, keeps only the prompt tokens that the last 32 prompt tokens attend to (`snapkv.budget_tokens`, default 1024) | `snapkv` (+ `--snapkv-budget N`) |
 | **StreamingLLM** (Xiao et al., ICLR 2024) | keeps the first 4 tokens ("attention sinks") + the most recent tokens, drops the middle; `streamingllm.budget_tokens` (default 1024) in total, the window slides while generating | `streamingllm` (+ `--streaming-budget N`), tag `streaming<N>` |
-| **CPU offloading** (transformers `DynamicCache(offloading=True)`) | keeps the full 16-bit cache but in CPU memory; each layer's K/V are copied to the GPU just before that layer runs. Same answers as the full cache, less GPU memory, slower tokens | `offload` |
+| **CPU offloading** (layer-by-layer, prefetch on a side CUDA stream) | keeps the full 16-bit cache but in CPU memory; each layer's K/V are copied to the GPU just before that layer runs. Same answers as the full cache, less GPU memory, slower tokens | `offload` |
 
 ```bash
 bash scripts/run_kivi_snapkv.sh          # kivi4, kivi2, snapkv 1024/2048 on custom + LongCodeU + position; then the report
@@ -174,7 +174,9 @@ reduction (KV bytes held on the GPU; for every method but `offload` that is all 
   K/V are cut to sinks + recent window; kept tokens keep their original rotary positions (the paper re-numbers them to
   run past the trained length, which 8K never reaches on Qwen2.5). Like SnapKV it leaves the short custom tasks
   untouched at 1024/2048 (`streaming_compressed` per row).
-- Offloading reports `kv_cache_gpu_bytes` / `kv_cache_cpu_bytes`; the KV on the GPU is about one layer of 28. Its
+- Offloading uses its own cache class (`cache_methods/offload.py`): transformers' `DynamicCache(offloading=True)` gave wrong
+  answers on the 7B model (see the module docstring). `scripts/run_offload.sh` checks the answers equal the full cache's
+  (`scripts/check_same_answers.py`) before the long runs. Offloading reports `kv_cache_gpu_bytes` / `kv_cache_cpu_bytes`; the KV on the GPU is about one layer of 28. Its
   TPOT includes the PCIe copies of the whole cache on every token, which is the cost being measured.
 - `tests/test_cache_methods.py` checks quantization error, packing, measured bytes, that SnapKV picks the same
   tokens as the model's own attention weights, that a StreamingLLM decoding step equals full attention with the
