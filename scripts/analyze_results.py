@@ -109,7 +109,7 @@ def correctness_chart(df, path, label):
     ax.set_xticks(range(len(g)))
     ax.set_xticklabels(g.index)
     ax.set_ylim(0, 110)
-    style(ax, "Correct answers by workflow (full KV cache)", None, "% correct")
+    style(ax, "Correct answers by workflow", None, "% correct")
     footnote(fig, label + "\nExplanation tasks (keyword-scored) have no executable ground truth and are not counted here.")
     fig.tight_layout(rect=(0, 0.06, 1, 1))
     fig.savefig(path)
@@ -142,7 +142,7 @@ def longcodeu_chart(df, path, label, csv_path):
     ax.set_xticks(range(len(g)))
     ax.set_xticklabels(g.index)
     ax.set_ylim(0, 110)
-    style(ax, "LongCodeU score by task (full KV cache)", None, "score × 100")
+    style(ax, "LongCodeU score by task", None, "score × 100")
     footnote(fig, label + "\nScore = F1 of recall/precision (CU_P, CU_DFA, DRA, SRE) or CodeBLEU/BLEU (CU_SA, LDU); "
              "re-implemented metrics")
     fig.tight_layout(rect=(0, 0.06, 1, 1))
@@ -214,7 +214,9 @@ def analyze(experiment_id, results_directory="results"):
     ok = df[df.status == "ok"]
     primary = bool(ok.get("is_primary_model", pd.Series([False])).fillna(False).all()) if len(ok) else False
     model = df.model.iloc[0]
-    label = f"{experiment_id} · {model} · full KV cache · n={len(ok)}" + \
+    method = df.cache_method.iloc[0] if len(df) else "full"
+    method_text = "full KV cache" if method == "full" else f"{method} KV cache"
+    label = f"{experiment_id} · {model} · {method_text} · n={len(ok)}" + \
             ("" if primary else " · PRELIMINARY (not the primary bf16 Qwen-7B run)")
 
     c = dirs["charts"]
@@ -235,10 +237,12 @@ def analyze(experiment_id, results_directory="results"):
     per_wf.to_csv(dirs["csv"] / f"{experiment_id}_by_workflow.csv", index=False)
 
     md = [f"# Results summary: {experiment_id}", "",
-          f"Model: `{model}`. Cache method: full KV cache (no compression).", "",
+          f"Model: `{model}`. Cache method: " + ("full KV cache (no compression)." if method == "full" else
+                                                 f"`{method}`. Compare with the full cache: python main.py compare"), "",
           ("" if primary else "**Preliminary pipeline-validation run** (not the primary bf16 Qwen2.5-Coder-7B model).\n"),
           f"This is a {len(df)}-sample demonstration of the pipeline. It is not statistically conclusive, "
-          "and no compression method has been evaluated, so no memory savings or quality retention are reported.", "",
+          + ("and no compression method has been evaluated, so no memory savings or quality retention are reported."
+             if method == "full" else "Quality retention and memory reduction are in results/comparison/."), "",
           "| metric | value |", "|---|---|"]
     md += [f"| {k} | {v} |" for k, v in summary.items()]
     md += ["", "## By workflow", "", per_wf.to_markdown(index=False) if len(per_wf) else "(no successful samples)",

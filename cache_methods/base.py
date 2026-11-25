@@ -20,6 +20,10 @@ class CacheMethod:
         """Extra keyword arguments for model.generate()."""
         return {"use_cache": True}
 
+    def cache_stats(self, cache):
+        """Extra per-request facts read from the finished cache (e.g. tokens kept). Default: none."""
+        return {}
+
     def describe(self):
         """Settings that must be stored with every result row."""
         return {"cache_method": self.name}

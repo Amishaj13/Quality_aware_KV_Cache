@@ -51,7 +51,7 @@ class InferenceRunner:
 
     def __init__(self, model, tokenizer, cfg):
         self.model, self.tokenizer, self.cfg = model, tokenizer, cfg
-        self.cache_method = get_cache_method(cfg["experiment"]["cache_method"])
+        self.cache_method = get_cache_method(cfg["experiment"]["cache_method"], cfg)
         self.model = self.cache_method.prepare(model, cfg)
         self.device = next(model.parameters()).device
         self.cache_kw = cache_kwarg_name(model)
@@ -111,8 +111,11 @@ class InferenceRunner:
             answer_ids.pop()
         lat = latency_from_stamps(timer.t_start, timer.stamps, t_end, generated_count)
 
-        kv_bytes = mm.cache_bytes(getattr(out, "past_key_values", None) or getattr(out, "cache", None))
+        out_cache = getattr(out, "past_key_values", None) or getattr(out, "cache", None)
+        kv_bytes = mm.cache_bytes(out_cache)
+        rec.update(self.cache_method.cache_stats(out_cache))
         rec.update(
+            **self.cache_method.describe(),
             output_tokens=generated_count,
             output_tokens_excluding_eos=len(answer_ids),
             hit_max_new_tokens=generated_count >= max_new_tokens,

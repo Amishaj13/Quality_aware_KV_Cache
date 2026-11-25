@@ -1,6 +1,6 @@
 # Roadmap after the first review (Dec 2026 – Mar 2027)
 
-Nothing below is implemented yet. The code is arranged so each item plugs in without
+KIVI and SnapKV are implemented (`cache_methods/kivi.py`, `cache_methods/snapkv.py`); the rest is not yet. The code is arranged so each item plugs in without
 changing the runner.
 
 ## 1. Compression methods (`cache_methods/`)
@@ -12,9 +12,9 @@ validator rejects the name, so no run can silently fall back to the full cache.
 |---|---|---|
 | StreamingLLM | attention sinks + recent window | simplest first: custom `Cache` subclass that evicts the middle |
 | H2O | keep heavy-hitter tokens by accumulated attention | needs attention scores: eager attention or a patched sdpa |
-| SnapKV | select prompt KV using an observation window | acts once after prefill |
+| SnapKV | select prompt KV using an observation window | **done**: forward pre-hook recomputes window queries; cache evicts once after prefill |
 | PyramidKV | per-layer budgets, larger in lower layers | builds on SnapKV selection |
-| KIVI | 2/4-bit asymmetric K/V quantization | `kivi_baseline/` already measures it on Llama-3.1-8B (pinned to transformers 4.43). Port to Qwen2 or use HF's quantized cache as a stand-in; record which |
+| KIVI | 2/4-bit asymmetric K/V quantization | **done**: own cache layer (packed uint8 codes, per-channel K / per-token V, 128-token fp16 residual); no custom kernel |
 | EvolKV | evolutionary search of layer budgets | runs on top of a budgeted eviction method |
 
 Formulas (`evaluation/comparison.py`, tested):

@@ -24,6 +24,7 @@ from evaluation.correctness import evaluate_sample
 from inference.generation import ContextOverflow, prepare_prompt
 from inference.inference_runner import InferenceRunner
 from models.model_loader import ModelLoadError, load_model
+from cache_methods import method_tag
 from utils.config import load_config
 from utils.dataset import load_samples
 from utils.paths import results_dirs
@@ -51,6 +52,9 @@ def parse_args(argv=None):
     p.add_argument("--max-samples", type=int)
     p.add_argument("--workflow")
     p.add_argument("--split")
+    p.add_argument("--cache-method", help="full | kivi4 | kivi2 | kivi | snapkv (default: from the config). "
+                   "Without --experiment-id the id gets the method appended, e.g. baseline_001_kivi4")
+    p.add_argument("--snapkv-budget", type=int, help="override snapkv.budget_tokens (prompt tokens kept)")
     p.add_argument("--quantization", choices=["none", "4bit"])
     p.add_argument("--device-map", help="cuda | auto | cpu (cpu only for tiny debugging models)")
     p.add_argument("--resume", action="store_true", help="skip samples with status ok in the existing log")
@@ -60,7 +64,11 @@ def parse_args(argv=None):
 
 
 def build_overrides(a):
-    o = {"model": {}, "experiment": {}, "dataset": {}}
+    o = {"model": {}, "experiment": {}, "dataset": {}, "snapkv": {}}
+    if getattr(a, "cache_method", None):
+        o["experiment"]["cache_method"] = a.cache_method
+    if getattr(a, "snapkv_budget", None):
+        o["snapkv"]["budget_tokens"] = a.snapkv_budget
     if a.model:
         o["model"]["name"] = a.model
     if a.quantization:
@@ -94,7 +102,7 @@ def run(cfg, resume=False, overwrite=False, loaded=None, allow_shared_gpu=False)
     samples, invalid = load_samples(d["path"], e.get("workflow", "all"), d.get("split", "all"), d.get("max_samples"))
     log(f"{len(samples)} samples selected, {len(invalid)} invalid, {len(done)} already done")
 
-    base = dict(experiment_id=e["experiment_id"], model=cfg["model"]["name"], cache_method=e["cache_method"],
+    base = dict(experiment_id=e["experiment_id"], model=cfg["model"]["name"], cache_method=method_tag(cfg),
                 context_length=e["context_length"])
     run_meta = {
         "started_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
@@ -202,9 +210,21 @@ def run(cfg, resume=False, overwrite=False, loaded=None, allow_shared_gpu=False)
     return 0
 
 
+def experiment_id_for(base_id, tag):
+    """baseline_001 + kivi4 -> baseline_001_kivi4; longcodeu_8k_full + kivi4 -> longcodeu_8k_kivi4."""
+    if tag == "full":
+        return base_id
+    if base_id.endswith("_full"):
+        return base_id[: -len("_full")] + "_" + tag
+    return f"{base_id}_{tag}"
+
+
 def main(argv=None):
     a = parse_args(argv)
     cfg = load_config(a.config, a.model_config, build_overrides(a))
+    if (a.cache_method or a.snapkv_budget) and not a.experiment_id:
+        cfg["experiment"]["experiment_id"] = experiment_id_for(cfg["experiment"]["experiment_id"], method_tag(cfg))
+        log(f"experiment_id: {cfg['experiment']['experiment_id']}")
     return run(cfg, resume=a.resume, overwrite=a.overwrite, allow_shared_gpu=a.allow_shared_gpu)
 
 

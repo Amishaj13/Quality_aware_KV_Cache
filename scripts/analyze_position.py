@@ -62,7 +62,7 @@ def analyze(prefix="position_full", results_directory="results"):
     t.to_csv(dirs["csv"] / f"{prefix}_by_depth.csv", index=False)
 
     primary = bool(df[df.status == "ok"].is_primary_model.fillna(False).all())
-    label = f"{prefix} · {df.model.iloc[0]} · full KV cache · ~{int(t.mean_input_tokens.mean() or 0)} input tokens" + \
+    label = f"{prefix} · {df.model.iloc[0]} · {df.cache_method.iloc[0]} KV cache · ~{int(t.mean_input_tokens.mean() or 0)} input tokens" + \
             ("" if primary else " · PRELIMINARY")
     fig, ax = plt.subplots(figsize=(8, 4.6), dpi=150)
     for w in WORKFLOWS:

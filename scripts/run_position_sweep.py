@@ -1,4 +1,4 @@
-"""Position-sensitivity sweep (Lost-in-the-Middle) with the FULL KV cache.
+"""Position-sensitivity sweep (Lost-in-the-Middle) for one KV-cache method (default: full).
 
 Each task's real code is embedded in ~target_tokens of unrelated synthetic Python at
 several relative positions (default 0%, 25%, 50%, 75%, 100% of the context, as in the
@@ -9,6 +9,8 @@ compression method will later be compared against.
   python scripts/run_position_sweep.py                                   # 5 depths, ~8K tokens, 30 tasks
   python scripts/run_position_sweep.py --depths 0 0.5 1 --max-samples 10 --target-tokens 4096
   python scripts/run_position_sweep.py --resume
+  python scripts/run_position_sweep.py --cache-method kivi4        # saved as position_kivi4_d000 ...
+  python scripts/run_position_sweep.py --cache-method snapkv --snapkv-budget 1024
 """
 import argparse
 import copy
@@ -16,6 +18,7 @@ import sys
 
 import _bootstrap  # noqa: F401
 
+from cache_methods import method_tag
 from models.model_loader import load_model
 from run_experiments import log, run
 from utils.config import load_config
@@ -32,12 +35,18 @@ def main(argv=None):
     p.add_argument("--depths", type=float, nargs="+", default=DEFAULT_DEPTHS)
     p.add_argument("--target-tokens", type=int)
     p.add_argument("--max-samples", type=int)
-    p.add_argument("--prefix", default="position_full")
+    p.add_argument("--cache-method", help="full | kivi4 | kivi2 | kivi | snapkv (default: from the config)")
+    p.add_argument("--snapkv-budget", type=int)
+    p.add_argument("--prefix", help="experiment id prefix (default: position_<method>, e.g. position_kivi4)")
     p.add_argument("--resume", action="store_true")
     p.add_argument("--overwrite", action="store_true")
     a = p.parse_args(argv)
 
-    ov = {"model": {}, "dataset": {}, "context_fill": {"enabled": True}}
+    ov = {"model": {}, "dataset": {}, "context_fill": {"enabled": True}, "experiment": {}, "snapkv": {}}
+    if a.cache_method:
+        ov["experiment"]["cache_method"] = a.cache_method
+    if a.snapkv_budget:
+        ov["snapkv"]["budget_tokens"] = a.snapkv_budget
     if a.model:
         ov["model"]["name"] = a.model
     if a.device_map:
@@ -47,6 +56,7 @@ def main(argv=None):
     if a.target_tokens:
         ov["context_fill"]["target_tokens"] = a.target_tokens
     base = load_config(a.config, a.model_config, ov)
+    a.prefix = a.prefix or f"position_{method_tag(base)}"
     import torch
     if torch.cuda.is_available():
         free, total = torch.cuda.mem_get_info()

@@ -37,6 +37,10 @@ def cache_bytes(obj, _seen=None):
     total, found = 0, False
     if hasattr(obj, "layers") and isinstance(getattr(obj, "layers"), (list, tuple)):
         for layer in obj.layers:
+            if callable(getattr(layer, "stored_tensors", None)):   # KIVI / SnapKV layers
+                total += sum(_tensor_bytes(t) for t in layer.stored_tensors())
+                found = True
+                continue
             for attr in ("keys", "values"):
                 t = getattr(layer, attr, None)
                 if torch.is_tensor(t):
