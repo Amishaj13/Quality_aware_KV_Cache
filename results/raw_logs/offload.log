@@ -1,0 +1,324 @@
+=== self-test (GPU offloading tests included) ===
+...........................                                              [100%]
+=============================== warnings summary ===============================
+../../../opt/conda/lib/python3.13/site-packages/dash/_jupyter.py:29
+  /opt/conda/lib/python3.13/site-packages/dash/_jupyter.py:29: DeprecationWarning: The `ipykernel.comm.Comm` class has been deprecated. Please use the `comm` module instead.For creating comms, use the function `from comm import create_comm`.
+    _dash_comm = Comm(target_name="dash")
+
+../../../opt/conda/lib/python3.13/site-packages/dash/testing/plugin.py:92
+  /opt/conda/lib/python3.13/site-packages/dash/testing/plugin.py:92: PytestRemovedIn10Warning: The hookimpl pytest_addhooks uses old-style configuration options (marks or attributes).
+  Please use the pytest.hookimpl(tryfirst=True) decorator instead
+   to configure the hooks.
+   See https://docs.pytest.org/en/latest/deprecations.html#configuring-hook-specs-impls-using-markers
+    @pytest.mark.tryfirst
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+27 passed, 2 warnings in 14.12s
+=== offload / custom (16:50) ===
+[16:50:44] experiment_id: baseline_001_offload
+[16:50:44] 30 samples selected, 0 invalid, 0 already done
+[16:50:44] loading Qwen/Qwen2.5-Coder-7B-Instruct ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:11<1:02:02, 11.01s/it]Loading weights:   1%|          | 4/339 [00:12<13:38,  2.44s/it]  Loading weights:   2%|▏         | 6/339 [00:12<07:55,  1.43s/it]Loading weights:   4%|▍         | 15/339 [00:13<02:17,  2.36it/s]Loading weights:   5%|▌         | 18/339 [00:14<02:07,  2.51it/s]Loading weights:   6%|▋         | 22/339 [00:14<01:35,  3.33it/s]Loading weights:   8%|▊         | 28/339 [00:15<01:17,  4.03it/s]Loading weights:   9%|▊         | 29/339 [00:16<01:38,  3.16it/s]Loading weights:   9%|▉         | 30/339 [00:17<02:03,  2.50it/s]Loading weights:  10%|█         | 34/339 [00:17<01:20,  3.80it/s]Loading weights:  11%|█         | 36/339 [00:18<01:08,  4.40it/s]Loading weights:  12%|█▏        | 40/339 [00:19<01:11,  4.17it/s]Loading weights:  12%|█▏        | 41/339 [00:20<01:35,  3.13it/s]Loading weights:  12%|█▏        | 42/339 [00:20<02:02,  2.42it/s]Loading weights:  14%|█▎        | 46/339 [00:21<01:12,  4.03it/s]Loading weights:  14%|█▍        | 47/339 [00:21<01:10,  4.15it/s]Loading weights:  15%|█▌        | 51/339 [00:22<01:04,  4.45it/s]Loading weights:  16%|█▌        | 53/339 [00:23<01:22,  3.48it/s]Loading weights:  16%|█▌        | 54/339 [00:23<01:37,  2.93it/s]Loading weights:  17%|█▋        | 58/339 [00:24<01:04,  4.38it/s]Loading weights:  19%|█▊        | 63/339 [00:24<00:48,  5.66it/s]Loading weights:  19%|█▉        | 64/339 [00:25<01:01,  4.47it/s]Loading weights:  19%|█▉        | 66/339 [00:25<01:00,  4.49it/s]Loading weights:  21%|██        | 70/339 [00:26<00:45,  5.94it/s]Loading weights:  22%|██▏       | 76/339 [00:26<00:32,  7.97it/s]Loading weights:  23%|██▎       | 77/339 [00:27<00:51,  5.04it/s]Loading weights:  23%|██▎       | 78/339 [00:28<01:12,  3.59it/s]Loading weights:  24%|██▍       | 82/339 [00:28<00:47,  5.45it/s]Loading weights:  25%|██▍       | 84/339 [00:28<00:39,  6.41it/s]Loading weights:  26%|██▌       | 88/339 [00:29<00:51,  4.90it/s]Loading weights:  27%|██▋       | 90/339 [00:30<00:58,  4.29it/s]Loading weights:  28%|██▊       | 94/339 [00:30<00:42,  5.80it/s]Loading weights:  29%|██▉       | 100/339 [00:32<00:50,  4.72it/s]Loading weights:  30%|███       | 102/339 [00:33<00:59,  3.97it/s]Loading weights:  31%|███▏      | 106/339 [00:33<00:42,  5.49it/s]Loading weights:  32%|███▏      | 108/339 [00:33<00:38,  6.06it/s]Loading weights:  33%|███▎      | 112/339 [00:34<00:52,  4.30it/s]Loading weights:  34%|███▎      | 114/339 [00:35<00:54,  4.09it/s]Loading weights:  35%|███▍      | 118/339 [00:35<00:36,  6.07it/s]Loading weights:  35%|███▌      | 120/339 [00:35<00:31,  6.92it/s]Loading weights:  37%|███▋      | 124/339 [00:37<00:53,  4.01it/s]Loading weights:  37%|███▋      | 126/339 [00:38<01:03,  3.35it/s]Loading weights:  38%|███▊      | 130/339 [00:38<00:42,  4.86it/s]Loading weights:  39%|███▉      | 132/339 [00:38<00:37,  5.48it/s]Loading weights:  40%|████      | 136/339 [00:39<00:38,  5.28it/s]Loading weights:  40%|████      | 137/339 [00:40<00:50,  3.96it/s]Loading weights:  41%|████      | 138/339 [00:41<01:11,  2.82it/s]Loading weights:  42%|████▏     | 142/339 [00:41<00:41,  4.80it/s]Loading weights:  42%|████▏     | 144/339 [00:41<00:33,  5.85it/s]Loading weights:  44%|████▎     | 148/339 [00:42<00:31,  6.08it/s]Loading weights:  44%|████▍     | 150/339 [00:43<00:44,  4.23it/s]Loading weights:  45%|████▌     | 154/339 [00:43<00:29,  6.34it/s]Loading weights:  46%|████▌     | 156/339 [00:43<00:24,  7.37it/s]Loading weights:  47%|████▋     | 160/339 [00:44<00:28,  6.25it/s]Loading weights:  48%|████▊     | 162/339 [00:45<00:53,  3.29it/s]Loading weights:  49%|████▉     | 167/339 [00:46<00:33,  5.10it/s]Loading weights:  51%|█████     | 172/339 [00:46<00:27,  6.08it/s]Loading weights:  51%|█████▏    | 174/339 [00:47<00:38,  4.30it/s]Loading weights:  53%|█████▎    | 178/339 [00:47<00:27,  5.91it/s]Loading weights:  53%|█████▎    | 180/339 [00:48<00:23,  6.85it/s]Loading weights:  54%|█████▍    | 184/339 [00:48<00:24,  6.43it/s]Loading weights:  55%|█████▍    | 186/339 [00:49<00:36,  4.15it/s]Loading weights:  56%|█████▌    | 190/339 [00:50<00:25,  5.87it/s]Loading weights:  57%|█████▋    | 192/339 [00:50<00:21,  6.80it/s]Loading weights:  58%|█████▊    | 196/339 [00:51<00:30,  4.61it/s]Loading weights:  58%|█████▊    | 198/339 [00:52<00:33,  4.20it/s]Loading weights:  60%|█████▉    | 202/339 [00:52<00:24,  5.52it/s]Loading weights:  61%|██████▏   | 208/339 [00:54<00:33,  3.95it/s]Loading weights:  62%|██████▏   | 210/339 [00:55<00:38,  3.36it/s]Loading weights:  63%|██████▎   | 214/339 [00:55<00:26,  4.63it/s]Loading weights:  63%|██████▎   | 215/339 [00:55<00:26,  4.67it/s]Loading weights:  65%|██████▍   | 219/339 [00:57<00:34,  3.53it/s]Loading weights:  65%|██████▌   | 222/339 [00:58<00:32,  3.58it/s]Loading weights:  67%|██████▋   | 226/339 [00:58<00:22,  5.05it/s]Loading weights:  67%|██████▋   | 228/339 [00:58<00:19,  5.65it/s]Loading weights:  68%|██████▊   | 232/339 [00:59<00:21,  5.06it/s]Loading weights:  69%|██████▊   | 233/339 [01:00<00:30,  3.48it/s]Loading weights:  69%|██████▉   | 234/339 [01:01<00:39,  2.66it/s]Loading weights:  70%|███████   | 238/339 [01:01<00:23,  4.29it/s]Loading weights:  71%|███████   | 240/339 [01:02<00:19,  5.02it/s]Loading weights:  72%|███████▏  | 243/339 [01:03<00:24,  3.99it/s]Loading weights:  72%|███████▏  | 245/339 [01:04<00:29,  3.17it/s]Loading weights:  73%|███████▎  | 246/339 [01:04<00:33,  2.76it/s]Loading weights:  74%|███████▎  | 250/339 [01:04<00:19,  4.51it/s]Loading weights:  76%|███████▌  | 256/339 [01:05<00:13,  5.95it/s]Loading weights:  76%|███████▌  | 257/339 [01:06<00:20,  3.95it/s]Loading weights:  76%|███████▌  | 258/339 [01:07<00:28,  2.88it/s]Loading weights:  77%|███████▋  | 262/339 [01:07<00:17,  4.52it/s]Loading weights:  78%|███████▊  | 263/339 [01:07<00:16,  4.58it/s]Loading weights:  79%|███████▉  | 267/339 [01:08<00:16,  4.50it/s]Loading weights:  79%|███████▉  | 269/339 [01:09<00:19,  3.52it/s]Loading weights:  80%|███████▉  | 270/339 [01:10<00:26,  2.58it/s]Loading weights:  81%|████████  | 274/339 [01:11<00:15,  4.22it/s]Loading weights:  81%|████████  | 275/339 [01:11<00:14,  4.31it/s]Loading weights:  83%|████████▎ | 280/339 [01:13<00:18,  3.13it/s]Loading weights:  83%|████████▎ | 282/339 [01:14<00:18,  3.01it/s]Loading weights:  84%|████████▍ | 285/339 [01:14<00:14,  3.74it/s]Loading weights:  85%|████████▍ | 287/339 [01:14<00:12,  4.15it/s]Loading weights:  86%|████████▌ | 291/339 [01:16<00:13,  3.47it/s]Loading weights:  87%|████████▋ | 294/339 [01:17<00:13,  3.29it/s]Loading weights:  88%|████████▊ | 298/339 [01:17<00:08,  4.70it/s]Loading weights:  88%|████████▊ | 300/339 [01:17<00:07,  5.31it/s]Loading weights:  89%|████████▉ | 303/339 [01:18<00:08,  4.24it/s]Loading weights:  90%|████████▉ | 305/339 [01:19<00:09,  3.62it/s]Loading weights:  90%|█████████ | 306/339 [01:20<00:10,  3.01it/s]Loading weights:  91%|█████████▏| 310/339 [01:20<00:05,  5.05it/s]Loading weights:  92%|█████████▏| 312/339 [01:20<00:04,  6.10it/s]Loading weights:  93%|█████████▎| 316/339 [01:21<00:04,  5.19it/s]Loading weights:  94%|█████████▍| 318/339 [01:22<00:05,  4.00it/s]Loading weights:  95%|█████████▍| 322/339 [01:22<00:02,  5.76it/s]Loading weights:  96%|█████████▌| 324/339 [01:22<00:02,  6.43it/s]Loading weights:  97%|█████████▋| 328/339 [01:23<00:01,  5.97it/s]Loading weights:  97%|█████████▋| 329/339 [01:24<00:02,  3.73it/s]Loading weights:  97%|█████████▋| 330/339 [01:25<00:03,  2.82it/s]Loading weights:  99%|█████████▊| 334/339 [01:25<00:01,  4.84it/s]Loading weights: 100%|██████████| 339/339 [01:25<00:00,  3.97it/s]
+[16:52:14] loaded in 86.51 s, dtype bfloat16, GPU weights 14.19 GiB, max_position_embeddings 32768
+[16:52:14] warm-up generation (not recorded)
+[16:52:20] 1/30 python_001 completion ok               in=103 out=117 t=4.26s peak=14.21GiB correct=True
+[16:52:27] 2/30 python_002 completion ok               in=130 out=167 t=6.11s peak=14.21GiB correct=True
+[16:52:30] 3/30 python_003 completion ok               in=101 out=77 t=2.78s peak=14.21GiB correct=True
+[16:52:38] 4/30 python_004 completion ok               in=155 out=208 t=7.63s peak=14.22GiB correct=True
+[16:52:45] 5/30 python_005 completion ok               in=107 out=166 t=6.04s peak=14.21GiB correct=True
+[16:52:54] 6/30 python_006 completion ok               in=102 out=244 t=8.89s peak=14.21GiB correct=True
+[16:52:59] 7/30 python_007 debugging  ok               in=176 out=123 t=4.52s peak=14.22GiB correct=True
+[16:53:02] 8/30 python_008 debugging  ok               in=129 out=64 t=2.35s peak=14.21GiB correct=True
+[16:53:04] 9/30 python_009 debugging  ok               in=112 out=54 t=1.95s peak=14.21GiB correct=False
+[16:53:07] 10/30 python_010 debugging  ok               in=123 out=57 t=2.07s peak=14.21GiB correct=True
+[16:53:10] 11/30 python_011 debugging  ok               in=131 out=75 t=2.74s peak=14.21GiB correct=True
+[16:53:13] 12/30 python_012 debugging  ok               in=136 out=67 t=2.46s peak=14.21GiB correct=True
+[16:53:20] 13/30 python_013 testgen    ok               in=134 out=171 t=6.26s peak=14.21GiB correct=False
+[16:53:31] 14/30 python_014 testgen    ok               in=138 out=256 t=9.4s peak=14.21GiB correct=False
+[16:53:39] 15/30 python_015 testgen    ok               in=154 out=196 t=7.19s peak=14.21GiB correct=False
+[16:53:49] 16/30 python_016 testgen    ok               in=238 out=256 t=9.53s peak=14.23GiB correct=False
+[16:54:00] 17/30 python_017 testgen    ok               in=187 out=256 t=9.46s peak=14.22GiB correct=False
+[16:54:08] 18/30 python_018 testgen    ok               in=179 out=190 t=6.99s peak=14.22GiB correct=False
+[16:54:18] 19/30 python_019 longcode   ok               in=343 out=256 t=9.75s peak=14.24GiB correct=None
+[16:54:28] 20/30 python_020 longcode   ok               in=356 out=256 t=9.73s peak=14.24GiB correct=False
+[16:54:39] 21/30 python_021 longcode   ok               in=509 out=256 t=9.94s peak=14.26GiB correct=None
+[16:54:40] 22/30 python_022 longcode   ok               in=520 out=30 t=1.26s peak=14.26GiB correct=True
+[16:54:51] 23/30 python_023 longcode   ok               in=304 out=256 t=9.67s peak=14.24GiB correct=None
+[16:54:51] 24/30 python_024 longcode   ok               in=342 out=2 t=0.17s peak=14.24GiB correct=True
+[16:54:52] 25/30 python_025 repoqa     ok               in=410 out=19 t=0.83s peak=14.25GiB correct=True
+[16:54:53] 26/30 python_026 repoqa     ok               in=406 out=9 t=0.45s peak=14.25GiB correct=False
+[16:55:04] 27/30 python_027 repoqa     ok               in=420 out=256 t=9.83s peak=14.25GiB correct=True
+[16:55:14] 28/30 python_028 repoqa     ok               in=344 out=256 t=9.72s peak=14.24GiB correct=None
+[16:55:14] 29/30 python_029 repoqa     ok               in=340 out=2 t=0.17s peak=14.24GiB correct=False
+[16:55:23] 30/30 python_030 repoqa     ok               in=346 out=220 t=8.35s peak=14.24GiB correct=False
+[16:55:23] done: 30 ok, 0 failed. Results: /home/sagemaker-user/kv_cache_research/results/json/baseline_001_offload.json and /home/sagemaker-user/kv_cache_research/results/csv/baseline_001_offload.csv
+30/30 responses identical to the full cache (100%)
+OK
+=== offload / longcodeu (16:55) ===
+[16:55:33] experiment_id: longcodeu_8k_offload
+[16:55:33] 80 samples selected, 0 invalid, 0 already done
+[16:55:33] loading Qwen/Qwen2.5-Coder-7B-Instruct ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:08<47:36,  8.45s/it]Loading weights:   1%|          | 4/339 [00:09<09:49,  1.76s/it]Loading weights:   1%|▏         | 5/339 [00:09<07:54,  1.42s/it]Loading weights:   2%|▏         | 6/339 [00:09<05:58,  1.08s/it]Loading weights:   5%|▍         | 16/339 [00:10<01:23,  3.88it/s]Loading weights:   5%|▌         | 18/339 [00:11<01:35,  3.36it/s]Loading weights:   6%|▋         | 22/339 [00:11<01:07,  4.73it/s]Loading weights:   7%|▋         | 24/339 [00:11<00:58,  5.38it/s]Loading weights:   8%|▊         | 28/339 [00:12<01:04,  4.84it/s]Loading weights:   9%|▊         | 29/339 [00:13<01:21,  3.81it/s]Loading weights:   9%|▉         | 30/339 [00:14<01:53,  2.73it/s]Loading weights:  10%|█         | 34/339 [00:14<01:15,  4.05it/s]Loading weights:  12%|█▏        | 40/339 [00:15<00:59,  5.04it/s]Loading weights:  12%|█▏        | 41/339 [00:16<01:16,  3.87it/s]Loading weights:  12%|█▏        | 42/339 [00:16<01:28,  3.36it/s]Loading weights:  14%|█▎        | 46/339 [00:17<00:56,  5.21it/s]Loading weights:  14%|█▍        | 47/339 [00:17<00:54,  5.34it/s]Loading weights:  15%|█▌        | 51/339 [00:18<00:54,  5.29it/s]Loading weights:  16%|█▌        | 53/339 [00:18<01:12,  3.97it/s]Loading weights:  16%|█▌        | 54/339 [00:19<01:26,  3.28it/s]Loading weights:  17%|█▋        | 58/339 [00:19<00:50,  5.56it/s]Loading weights:  19%|█▊        | 63/339 [00:20<00:49,  5.61it/s]Loading weights:  19%|█▉        | 65/339 [00:21<00:55,  4.91it/s]Loading weights:  19%|█▉        | 66/339 [00:22<01:20,  3.41it/s]Loading weights:  21%|██        | 70/339 [00:22<00:52,  5.13it/s]Loading weights:  22%|██▏       | 75/339 [00:24<01:11,  3.70it/s]Loading weights:  23%|██▎       | 78/339 [00:25<01:15,  3.48it/s]Loading weights:  24%|██▍       | 82/339 [00:25<00:52,  4.89it/s]Loading weights:  26%|██▌       | 88/339 [00:26<00:43,  5.72it/s]Loading weights:  27%|██▋       | 90/339 [00:27<01:02,  3.99it/s]Loading weights:  28%|██▊       | 94/339 [00:27<00:44,  5.49it/s]Loading weights:  28%|██▊       | 96/339 [00:27<00:39,  6.12it/s]Loading weights:  29%|██▉       | 100/339 [00:29<00:58,  4.10it/s]Loading weights:  30%|███       | 102/339 [00:30<01:07,  3.53it/s]Loading weights:  31%|███▏      | 106/339 [00:30<00:46,  5.03it/s]Loading weights:  32%|███▏      | 108/339 [00:30<00:40,  5.65it/s]Loading weights:  33%|███▎      | 112/339 [00:31<00:37,  6.04it/s]Loading weights:  33%|███▎      | 113/339 [00:32<00:55,  4.06it/s]Loading weights:  34%|███▎      | 114/339 [00:32<01:13,  3.07it/s]Loading weights:  35%|███▍      | 117/339 [00:33<00:49,  4.49it/s]Loading weights:  35%|███▌      | 120/339 [00:33<00:34,  6.34it/s]Loading weights:  37%|███▋      | 124/339 [00:34<01:00,  3.56it/s]Loading weights:  37%|███▋      | 126/339 [00:35<00:57,  3.72it/s]Loading weights:  38%|███▊      | 130/339 [00:35<00:38,  5.42it/s]Loading weights:  39%|███▉      | 132/339 [00:35<00:34,  6.07it/s]Loading weights:  40%|████      | 136/339 [00:36<00:35,  5.65it/s]Loading weights:  40%|████      | 137/339 [00:37<00:48,  4.15it/s]Loading weights:  41%|████      | 138/339 [00:37<00:50,  3.95it/s]Loading weights:  42%|████▏     | 143/339 [00:37<00:26,  7.28it/s]Loading weights:  43%|████▎     | 147/339 [00:38<00:23,  8.26it/s]Loading weights:  44%|████▍     | 149/339 [00:38<00:24,  7.76it/s]Loading weights:  45%|████▍     | 151/339 [00:38<00:26,  7.11it/s]Loading weights:  46%|████▌     | 156/339 [00:38<00:16, 10.92it/s]Loading weights:  47%|████▋     | 160/339 [00:39<00:20,  8.55it/s]Loading weights:  48%|████▊     | 162/339 [00:40<00:39,  4.53it/s]Loading weights:  49%|████▉     | 166/339 [00:41<00:28,  5.97it/s]Loading weights:  51%|█████     | 172/339 [00:41<00:22,  7.33it/s]Loading weights:  51%|█████▏    | 174/339 [00:42<00:27,  5.96it/s]Loading weights:  54%|█████▍    | 184/339 [00:42<00:14, 10.72it/s]Loading weights:  55%|█████▍    | 186/339 [00:43<00:21,  7.08it/s]Loading weights:  56%|█████▌    | 190/339 [00:43<00:16,  8.80it/s]Loading weights:  58%|█████▊    | 196/339 [00:44<00:15,  9.41it/s]Loading weights:  58%|█████▊    | 198/339 [00:45<00:23,  5.95it/s]Loading weights:  60%|█████▉    | 202/339 [00:45<00:19,  7.03it/s]Loading weights:  61%|██████▏   | 208/339 [00:48<00:31,  4.12it/s]Loading weights:  63%|██████▎   | 214/339 [00:48<00:20,  6.00it/s]Loading weights:  64%|██████▎   | 216/339 [00:48<00:19,  6.38it/s]Loading weights:  65%|██████▍   | 220/339 [00:50<00:29,  4.02it/s]Loading weights:  65%|██████▌   | 222/339 [00:50<00:29,  3.91it/s]Loading weights:  67%|██████▋   | 226/339 [00:51<00:21,  5.36it/s]Loading weights:  67%|██████▋   | 228/339 [00:51<00:18,  6.00it/s]Loading weights:  68%|██████▊   | 232/339 [00:52<00:19,  5.62it/s]Loading weights:  69%|██████▊   | 233/339 [00:53<00:27,  3.89it/s]Loading weights:  69%|██████▉   | 234/339 [00:53<00:31,  3.36it/s]Loading weights:  72%|███████▏  | 244/339 [00:53<00:10,  8.72it/s]Loading weights:  73%|███████▎  | 246/339 [00:55<00:18,  4.95it/s]Loading weights:  74%|███████▎  | 250/339 [00:55<00:13,  6.42it/s]Loading weights:  76%|███████▌  | 256/339 [00:55<00:11,  7.37it/s]Loading weights:  76%|███████▌  | 258/339 [00:57<00:20,  3.90it/s]Loading weights:  77%|███████▋  | 262/339 [00:58<00:16,  4.79it/s]Loading weights:  79%|███████▉  | 268/339 [00:59<00:13,  5.38it/s]Loading weights:  79%|███████▉  | 269/339 [01:00<00:17,  3.89it/s]Loading weights:  80%|███████▉  | 270/339 [01:01<00:23,  2.94it/s]Loading weights:  81%|████████  | 274/339 [01:01<00:16,  4.03it/s]Loading weights:  82%|████████▏ | 279/339 [01:03<00:18,  3.28it/s]Loading weights:  83%|████████▎ | 282/339 [01:04<00:17,  3.17it/s]Loading weights:  84%|████████▍ | 286/339 [01:04<00:13,  4.07it/s]Loading weights:  86%|████████▌ | 292/339 [01:06<00:13,  3.54it/s]Loading weights:  87%|████████▋ | 294/339 [01:07<00:12,  3.68it/s]Loading weights:  88%|████████▊ | 298/339 [01:07<00:08,  4.80it/s]Loading weights:  90%|████████▉ | 304/339 [01:09<00:09,  3.78it/s]Loading weights:  90%|█████████ | 306/339 [01:10<00:10,  3.28it/s]Loading weights:  91%|█████████▏| 310/339 [01:10<00:06,  4.44it/s]Loading weights:  92%|█████████▏| 311/339 [01:11<00:06,  4.49it/s]Loading weights:  93%|█████████▎| 315/339 [01:12<00:05,  4.22it/s]Loading weights:  93%|█████████▎| 316/339 [01:13<00:07,  3.05it/s]Loading weights:  94%|█████████▍| 318/339 [01:14<00:07,  2.83it/s]Loading weights:  95%|█████████▍| 322/339 [01:14<00:04,  4.01it/s]Loading weights:  97%|█████████▋| 328/339 [01:15<00:02,  4.66it/s]Loading weights:  97%|█████████▋| 329/339 [01:16<00:02,  3.37it/s]Loading weights:  97%|█████████▋| 330/339 [01:17<00:03,  2.57it/s]Loading weights:  99%|█████████▊| 334/339 [01:18<00:01,  3.72it/s]Loading weights: 100%|██████████| 339/339 [01:18<00:00,  4.34it/s]
+[16:56:57] loaded in 79.39 s, dtype bfloat16, GPU weights 14.19 GiB, max_position_embeddings 32768
+[16:56:57] warm-up generation (not recorded)
+[16:57:04] 1/80 lcu_cu_p_58 longcode   ok               in=2948 out=55 t=3.5s peak=14.59GiB correct=None
+[16:57:31] 2/80 lcu_cu_p_64 longcode   ok               in=7131 out=317 t=24.91s peak=15.16GiB correct=None
+[16:57:43] 3/80 lcu_cu_p_69 longcode   ok               in=2950 out=214 t=11.57s peak=14.59GiB correct=None
+[16:57:57] 4/80 lcu_cu_p_44 longcode   ok               in=7246 out=132 t=11.44s peak=15.17GiB correct=None
+[16:58:00] 5/80 lcu_cu_p_24 longcode   ok               in=2571 out=23 t=1.74s peak=14.54GiB correct=None
+[16:58:08] 6/80 lcu_cu_p_17 longcode   ok               in=2968 out=119 t=6.74s peak=14.6GiB correct=None
+[16:58:14] 7/80 lcu_cu_p_26 longcode   ok               in=4800 out=67 t=5.19s peak=14.84GiB correct=None
+[16:58:20] 8/80 lcu_cu_p_62 longcode   ok               in=4477 out=57 t=4.43s peak=14.8GiB correct=None
+[16:58:30] 9/80 lcu_cu_p_56 longcode   ok               in=4787 out=118 t=8.26s peak=14.84GiB correct=None
+[16:58:34] 10/80 lcu_cu_p_68 longcode   ok               in=3053 out=40 t=2.76s peak=14.61GiB correct=None
+[16:58:43] 11/80 lcu_cu_sa_68 longcode   ok               in=7124 out=69 t=6.76s peak=15.16GiB correct=None
+[16:58:46] 12/80 lcu_cu_sa_26 longcode   ok               in=2050 out=51 t=2.82s peak=14.47GiB correct=None
+[16:58:50] 13/80 lcu_cu_sa_2 longcode   ok               in=2659 out=43 t=2.73s peak=14.55GiB correct=None
+[16:59:03] 14/80 lcu_cu_sa_44 longcode   ok               in=4187 out=189 t=11.79s peak=14.76GiB correct=None
+[16:59:09] 15/80 lcu_cu_sa_56 longcode   ok               in=5543 out=42 t=4.04s peak=14.94GiB correct=None
+[16:59:16] 16/80 lcu_cu_sa_27 longcode   ok               in=5234 out=64 t=5.26s peak=14.9GiB correct=None
+[16:59:28] 17/80 lcu_cu_sa_129 longcode   ok               in=6712 out=112 t=9.58s peak=15.1GiB correct=None
+[16:59:40] 18/80 lcu_cu_sa_100 longcode   ok               in=5331 out=153 t=10.95s peak=14.91GiB correct=None
+[17:00:19] 19/80 lcu_cu_sa_130 longcode   ok               in=6297 out=512 t=36.95s peak=15.05GiB correct=None
+[17:00:47] 20/80 lcu_cu_sa_24 longcode   ok               in=2744 out=512 t=26.46s peak=14.57GiB correct=None
+[17:00:51] 21/80 lcu_cu_dfa_26 longcode   ok               in=2488 out=67 t=3.78s peak=14.53GiB correct=None
+[17:00:54] 22/80 lcu_cu_dfa_24 longcode   ok               in=2618 out=30 t=2.09s peak=14.55GiB correct=None
+[17:01:08] 23/80 lcu_cu_dfa_17 longcode   ok               in=3651 out=209 t=12.25s peak=14.69GiB correct=None
+[17:01:11] 24/80 lcu_cu_dfa_44 longcode   ok               in=2625 out=31 t=2.14s peak=14.55GiB correct=None
+[17:01:14] 25/80 lcu_cu_dfa_27 longcode   ok               in=2471 out=28 t=1.91s peak=14.53GiB correct=None
+[17:01:17] 26/80 lcu_cu_dfa_1 longcode   ok               in=2981 out=30 t=2.23s peak=14.6GiB correct=None
+[17:01:21] 27/80 lcu_cu_dfa_28 longcode   ok               in=2652 out=53 t=3.22s peak=14.55GiB correct=None
+[17:01:26] 28/80 lcu_cu_dfa_15 longcode   ok               in=2519 out=61 t=3.51s peak=14.54GiB correct=None
+[17:01:30] 29/80 lcu_cu_dfa_22 longcode   ok               in=2528 out=52 t=3.08s peak=14.54GiB correct=None
+[17:01:33] 30/80 lcu_cu_dfa_14 longcode   ok               in=3049 out=33 t=2.4s peak=14.61GiB correct=None
+[17:01:47] 31/80 lcu_dra_t1_26 repoqa     ok               in=5264 out=180 t=12.59s peak=14.9GiB correct=None
+[17:01:56] 32/80 lcu_dra_t1_56 repoqa     ok               in=7199 out=67 t=6.66s peak=15.17GiB correct=None
+[17:02:00] 33/80 lcu_dra_t1_24 repoqa     ok               in=3402 out=36 t=2.7s peak=14.65GiB correct=None
+[17:02:09] 34/80 lcu_dra_t1_17 repoqa     ok               in=5032 out=92 t=7.06s peak=14.87GiB correct=None
+[17:02:19] 35/80 lcu_dra_t1_44 repoqa     ok               in=4627 out=134 t=9.07s peak=14.82GiB correct=None
+[17:02:53] 36/80 lcu_dra_t1_62 repoqa     ok               in=6059 out=442 t=31.42s peak=15.01GiB correct=None
+[17:03:04] 37/80 lcu_dra_t1_58 repoqa     ok               in=4546 out=143 t=9.54s peak=14.81GiB correct=None
+[17:03:34] 38/80 lcu_dra_t1_27 repoqa     ok               in=3791 out=512 t=29.52s peak=14.71GiB correct=None
+[17:04:16] 39/80 lcu_dra_t1_1 repoqa     ok               in=7008 out=512 t=39.04s peak=15.14GiB correct=None
+[17:04:22] 40/80 lcu_dra_t1_28 repoqa     ok               in=5185 out=56 t=4.74s peak=14.9GiB correct=None
+[17:04:57] 41/80 lcu_dra_t2_26 repoqa     ok               in=4928 out=512 t=33.06s peak=14.86GiB correct=None
+[17:05:11] 42/80 lcu_dra_t2_56 repoqa     ok               in=7198 out=141 t=12.06s peak=15.17GiB correct=None
+[17:05:41] 43/80 lcu_dra_t2_24 repoqa     ok               in=3397 out=512 t=28.37s peak=14.65GiB correct=None
+[17:06:15] 44/80 lcu_dra_t2_17 repoqa     ok               in=4819 out=512 t=32.54s peak=14.84GiB correct=None
+[17:06:46] 45/80 lcu_dra_t2_44 repoqa     ok               in=4612 out=478 t=29.86s peak=14.82GiB correct=None
+[17:07:24] 46/80 lcu_dra_t2_62 repoqa     ok               in=6050 out=512 t=36.22s peak=15.01GiB correct=None
+[17:07:57] 47/80 lcu_dra_t2_58 repoqa     ok               in=4501 out=512 t=31.63s peak=14.8GiB correct=None
+[17:08:28] 48/80 lcu_dra_t2_27 repoqa     ok               in=3770 out=512 t=29.47s peak=14.7GiB correct=None
+[17:09:09] 49/80 lcu_dra_t2_1 repoqa     ok               in=6824 out=512 t=38.51s peak=15.12GiB correct=None
+[17:09:23] 50/80 lcu_dra_t2_28 repoqa     ok               in=5206 out=188 t=13.02s peak=14.9GiB correct=None
+[17:09:59] 51/80 lcu_sre_t1_26 repoqa     ok               in=5450 out=512 t=34.42s peak=14.93GiB correct=None
+[17:10:37] 52/80 lcu_sre_t1_56 repoqa     ok               in=5897 out=512 t=35.77s peak=14.99GiB correct=None
+[17:11:10] 53/80 lcu_sre_t1_24 repoqa     ok               in=5372 out=475 t=31.75s peak=14.92GiB correct=None
+[17:11:32] 54/80 lcu_sre_t1_17 repoqa     ok               in=4325 out=317 t=19.6s peak=14.78GiB correct=None
+[17:12:00] 55/80 lcu_sre_t1_44 repoqa     ok               in=2971 out=512 t=27.15s peak=14.6GiB correct=None
+[17:12:31] 56/80 lcu_sre_t1_62 repoqa     ok               in=3765 out=512 t=29.46s peak=14.7GiB correct=None
+[17:13:04] 57/80 lcu_sre_t1_58 repoqa     ok               in=4617 out=512 t=31.94s peak=14.82GiB correct=None
+[17:13:47] 58/80 lcu_sre_t1_116 repoqa     ok               in=7496 out=512 t=40.52s peak=15.21GiB correct=None
+[17:14:13] 59/80 lcu_sre_t1_27 repoqa     ok               in=4721 out=387 t=24.51s peak=14.83GiB correct=None
+[17:14:38] 60/80 lcu_sre_t1_1 repoqa     ok               in=3027 out=452 t=24.1s peak=14.61GiB correct=None
+[17:15:14] 61/80 lcu_sre_t2_26 repoqa     ok               in=5462 out=512 t=34.45s peak=14.93GiB correct=None
+[17:15:52] 62/80 lcu_sre_t2_56 repoqa     ok               in=5844 out=512 t=35.61s peak=14.99GiB correct=None
+[17:16:28] 63/80 lcu_sre_t2_24 repoqa     ok               in=5382 out=512 t=34.23s peak=14.92GiB correct=None
+[17:16:49] 64/80 lcu_sre_t2_17 repoqa     ok               in=4336 out=317 t=19.65s peak=14.78GiB correct=None
+[17:17:17] 65/80 lcu_sre_t2_44 repoqa     ok               in=2903 out=512 t=26.94s peak=14.59GiB correct=None
+[17:17:48] 66/80 lcu_sre_t2_62 repoqa     ok               in=3742 out=512 t=29.41s peak=14.7GiB correct=None
+[17:18:19] 67/80 lcu_sre_t2_58 repoqa     ok               in=3958 out=512 t=30.01s peak=14.73GiB correct=None
+[17:19:00] 68/80 lcu_sre_t2_116 repoqa     ok               in=7084 out=512 t=39.26s peak=15.15GiB correct=None
+[17:19:26] 69/80 lcu_sre_t2_27 repoqa     ok               in=4707 out=387 t=24.48s peak=14.83GiB correct=None
+[17:20:10] 70/80 lcu_sre_t2_68 repoqa     ok               in=7634 out=512 t=40.93s peak=15.22GiB correct=None
+[17:20:31] 71/80 lcu_ldu_1 longcode   ok               in=2420 out=422 t=21.02s peak=14.52GiB correct=None
+[17:20:39] 72/80 lcu_ldu_2 longcode   ok               in=3079 out=103 t=6.0s peak=14.61GiB correct=None
+[17:20:49] 73/80 lcu_ldu_34 longcode   ok               in=4466 out=127 t=8.52s peak=14.8GiB correct=None
+[17:21:12] 74/80 lcu_ldu_22 longcode   ok               in=4894 out=334 t=21.84s peak=14.86GiB correct=None
+[17:21:23] 75/80 lcu_ldu_27 longcode   ok               in=3777 out=160 t=9.69s peak=14.7GiB correct=None
+[17:21:41] 76/80 lcu_ldu_38 longcode   ok               in=3625 out=294 t=16.89s peak=14.68GiB correct=None
+[17:21:47] 77/80 lcu_ldu_12 longcode   ok               in=2389 out=99 t=5.27s peak=14.52GiB correct=None
+[17:22:17] 78/80 lcu_ldu_13 longcode   ok               in=3321 out=512 t=28.15s peak=14.64GiB correct=None
+[17:22:48] 79/80 lcu_ldu_26 longcode   ok               in=3936 out=512 t=29.94s peak=14.73GiB correct=None
+[17:23:18] 80/80 lcu_ldu_33 longcode   ok               in=3609 out=512 t=29.02s peak=14.68GiB correct=None
+[17:23:18] done: 80 ok, 0 failed. Results: /home/sagemaker-user/kv_cache_research/results/json/longcodeu_8k_offload.json and /home/sagemaker-user/kv_cache_research/results/csv/longcodeu_8k_offload.csv
+=== offload / position (17:23) ===
+[17:23:30] loading Qwen/Qwen2.5-Coder-7B-Instruct once for 5 depths ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/339 [00:00<?, ?it/s]Loading weights:   0%|          | 1/339 [00:12<1:12:26, 12.86s/it]Loading weights:   2%|▏         | 6/339 [00:13<09:41,  1.75s/it]  Loading weights:   3%|▎         | 10/339 [00:14<04:55,  1.11it/s]Loading weights:   4%|▎         | 12/339 [00:14<03:44,  1.46it/s]Loading weights:   4%|▍         | 15/339 [00:15<02:53,  1.87it/s]Loading weights:   5%|▌         | 17/339 [00:15<02:44,  1.95it/s]Loading weights:   5%|▌         | 18/339 [00:16<03:09,  1.69it/s]Loading weights:   6%|▋         | 22/339 [00:17<01:46,  2.97it/s]Loading weights:   7%|▋         | 23/339 [00:17<01:40,  3.16it/s]Loading weights:   8%|▊         | 28/339 [00:18<01:20,  3.86it/s]Loading weights:   9%|▊         | 29/339 [00:19<01:48,  2.87it/s]Loading weights:   9%|▉         | 30/339 [00:20<02:12,  2.34it/s]Loading weights:  10%|█         | 34/339 [00:20<01:23,  3.65it/s]Loading weights:  12%|█▏        | 40/339 [00:21<01:05,  4.55it/s]Loading weights:  12%|█▏        | 41/339 [00:22<01:25,  3.50it/s]Loading weights:  12%|█▏        | 42/339 [00:23<01:41,  2.93it/s]Loading weights:  14%|█▎        | 46/339 [00:23<01:03,  4.64it/s]Loading weights:  14%|█▍        | 47/339 [00:23<01:02,  4.69it/s]Loading weights:  15%|█▌        | 51/339 [00:24<01:07,  4.29it/s]Loading weights:  16%|█▌        | 53/339 [00:25<01:22,  3.49it/s]Loading weights:  16%|█▌        | 54/339 [00:26<01:37,  2.92it/s]Loading weights:  17%|█▋        | 59/339 [00:26<00:51,  5.48it/s]Loading weights:  19%|█▉        | 64/339 [00:27<00:49,  5.55it/s]Loading weights:  19%|█▉        | 66/339 [00:28<01:27,  3.14it/s]Loading weights:  20%|██        | 69/339 [00:29<01:05,  4.10it/s]Loading weights:  22%|██▏       | 76/339 [00:30<00:50,  5.22it/s]Loading weights:  23%|██▎       | 77/339 [00:31<01:08,  3.82it/s]Loading weights:  23%|██▎       | 78/339 [00:32<01:29,  2.91it/s]Loading weights:  24%|██▍       | 82/339 [00:32<00:57,  4.48it/s]Loading weights:  25%|██▍       | 84/339 [00:32<00:47,  5.38it/s]Loading weights:  26%|██▌       | 88/339 [00:33<00:46,  5.35it/s]Loading weights:  27%|██▋       | 90/339 [00:34<01:19,  3.15it/s]Loading weights:  28%|██▊       | 94/339 [00:34<00:52,  4.67it/s]Loading weights:  28%|██▊       | 96/339 [00:34<00:45,  5.36it/s]Loading weights:  29%|██▉       | 100/339 [00:35<00:46,  5.18it/s]Loading weights:  30%|██▉       | 101/339 [00:36<01:05,  3.64it/s]Loading weights:  30%|███       | 102/339 [00:37<01:24,  2.82it/s]Loading weights:  31%|███▏      | 106/339 [00:37<00:55,  4.21it/s]Loading weights:  33%|███▎      | 112/339 [00:38<00:38,  5.88it/s]Loading weights:  33%|███▎      | 113/339 [00:39<00:53,  4.21it/s]Loading weights:  34%|███▎      | 114/339 [00:40<01:10,  3.19it/s]Loading weights:  35%|███▍      | 117/339 [00:40<00:49,  4.50it/s]Loading weights:  35%|███▌      | 119/339 [00:40<00:40,  5.49it/s]Loading weights:  37%|███▋      | 124/339 [00:41<00:36,  5.90it/s]Loading weights:  37%|███▋      | 125/339 [00:42<00:56,  3.79it/s]Loading weights:  37%|███▋      | 126/339 [00:42<01:00,  3.53it/s]Loading weights:  38%|███▊      | 130/339 [00:42<00:41,  5.08it/s]Loading weights:  40%|████      | 136/339 [00:44<00:48,  4.14it/s]Loading weights:  41%|████      | 138/339 [00:45<00:48,  4.16it/s]Loading weights:  42%|████▏     | 142/339 [00:45<00:33,  5.85it/s]Loading weights:  42%|████▏     | 144/339 [00:45<00:29,  6.61it/s]Loading weights:  44%|████▎     | 148/339 [00:45<00:27,  7.07it/s]Loading weights:  44%|████▍     | 150/339 [00:47<00:42,  4.40it/s]Loading weights:  45%|████▌     | 154/339 [00:47<00:32,  5.67it/s]Loading weights:  47%|████▋     | 160/339 [00:49<00:39,  4.58it/s]Loading weights:  48%|████▊     | 162/339 [00:49<00:45,  3.93it/s]Loading weights:  49%|████▉     | 166/339 [00:50<00:31,  5.52it/s]Loading weights:  50%|████▉     | 168/339 [00:50<00:27,  6.28it/s]Loading weights:  51%|█████     | 172/339 [00:50<00:21,  7.92it/s]Loading weights:  51%|█████▏    | 174/339 [00:51<00:28,  5.80it/s]Loading weights:  53%|█████▎    | 178/339 [00:51<00:19,  8.30it/s]Loading weights:  53%|█████▎    | 180/339 [00:51<00:17,  9.25it/s]Loading weights:  54%|█████▍    | 184/339 [00:52<00:21,  7.34it/s]Loading weights:  55%|█████▍    | 186/339 [00:52<00:29,  5.18it/s]Loading weights:  56%|█████▋    | 191/339 [00:53<00:17,  8.34it/s]Loading weights:  58%|█████▊    | 196/339 [00:54<00:24,  5.92it/s]Loading weights:  58%|█████▊    | 198/339 [00:54<00:26,  5.42it/s]Loading weights:  60%|█████▉    | 203/339 [00:54<00:17,  7.97it/s]Loading weights:  61%|██████    | 207/339 [00:55<00:18,  7.27it/s]Loading weights:  62%|██████▏   | 209/339 [00:56<00:24,  5.38it/s]Loading weights:  62%|██████▏   | 211/339 [00:57<00:32,  3.97it/s]Loading weights:  63%|██████▎   | 214/339 [00:57<00:24,  5.08it/s]Loading weights:  64%|██████▎   | 216/339 [00:57<00:21,  5.74it/s]Loading weights:  65%|██████▍   | 220/339 [00:58<00:24,  4.76it/s]Loading weights:  65%|██████▌   | 221/339 [00:59<00:36,  3.25it/s]Loading weights:  65%|██████▌   | 222/339 [01:00<00:43,  2.69it/s]Loading weights:  67%|██████▋   | 226/339 [01:01<00:27,  4.17it/s]Loading weights:  68%|██████▊   | 232/339 [01:01<00:21,  5.05it/s]Loading weights:  69%|██████▊   | 233/339 [01:02<00:29,  3.58it/s]Loading weights:  69%|██████▉   | 234/339 [01:03<00:34,  3.06it/s]Loading weights:  71%|███████   | 239/339 [01:03<00:18,  5.53it/s]Loading weights:  72%|███████▏  | 243/339 [01:05<00:23,  4.12it/s]Loading weights:  73%|███████▎  | 246/339 [01:05<00:23,  4.04it/s]Loading weights:  74%|███████▎  | 250/339 [01:06<00:16,  5.34it/s]Loading weights:  75%|███████▌  | 255/339 [01:07<00:15,  5.29it/s]Loading weights:  76%|███████▌  | 257/339 [01:07<00:18,  4.48it/s]Loading weights:  76%|███████▌  | 258/339 [01:08<00:24,  3.30it/s]Loading weights:  77%|███████▋  | 262/339 [01:08<00:15,  5.00it/s]Loading weights:  78%|███████▊  | 264/339 [01:09<00:13,  5.66it/s]Loading weights:  79%|███████▉  | 268/339 [01:11<00:20,  3.43it/s]Loading weights:  80%|███████▉  | 270/339 [01:11<00:20,  3.39it/s]Loading weights:  81%|████████  | 274/339 [01:11<00:12,  5.06it/s]Loading weights:  81%|████████▏ | 276/339 [01:11<00:10,  5.99it/s]Loading weights:  83%|████████▎ | 280/339 [01:13<00:15,  3.79it/s]Loading weights:  83%|████████▎ | 282/339 [01:14<00:18,  3.17it/s]Loading weights:  84%|████████▍ | 286/339 [01:14<00:11,  4.60it/s]Loading weights:  85%|████████▍ | 288/339 [01:15<00:09,  5.21it/s]Loading weights:  86%|████████▌ | 292/339 [01:17<00:14,  3.25it/s]Loading weights:  87%|████████▋ | 294/339 [01:17<00:13,  3.43it/s]Loading weights:  88%|████████▊ | 300/339 [01:17<00:06,  5.76it/s]Loading weights:  90%|████████▉ | 304/339 [01:20<00:11,  2.94it/s]Loading weights:  91%|█████████▏| 310/339 [01:20<00:06,  4.59it/s]Loading weights:  92%|█████████▏| 312/339 [01:20<00:05,  5.19it/s]Loading weights:  93%|█████████▎| 316/339 [01:22<00:06,  3.51it/s]Loading weights:  94%|█████████▍| 318/339 [01:23<00:05,  3.51it/s]Loading weights:  95%|█████████▍| 322/339 [01:23<00:03,  4.67it/s]Loading weights:  97%|█████████▋| 328/339 [01:24<00:02,  5.38it/s]Loading weights:  97%|█████████▋| 329/339 [01:25<00:02,  3.80it/s]Loading weights:  97%|█████████▋| 330/339 [01:26<00:03,  2.85it/s]Loading weights:  99%|█████████▊| 334/339 [01:26<00:01,  4.29it/s]Loading weights:  99%|█████████▉| 336/339 [01:27<00:00,  4.95it/s]Loading weights: 100%|██████████| 339/339 [01:27<00:00,  3.89it/s]
+[17:25:03] === depth 0.00 -> position_offload_d000 ===
+[17:25:03] 30 samples selected, 0 invalid, 0 already done
+[17:25:03] loaded in 88.47 s, dtype bfloat16, GPU weights 14.19 GiB, max_position_embeddings 32768
+[17:25:03] warm-up generation (not recorded)
+[17:25:19] 1/30 python_001 completion ok               in=7665 out=117 t=10.74s peak=15.23GiB correct=True
+[17:25:36] 2/30 python_002 completion ok               in=7600 out=168 t=14.5s peak=15.22GiB correct=True
+[17:25:46] 3/30 python_003 completion ok               in=7664 out=77 t=7.71s peak=15.23GiB correct=True
+[17:26:06] 4/30 python_004 completion ok               in=7625 out=208 t=17.55s peak=15.22GiB correct=True
+[17:26:22] 5/30 python_005 completion ok               in=7670 out=157 t=13.73s peak=15.23GiB correct=False
+[17:26:45] 6/30 python_006 completion ok               in=7665 out=242 t=20.18s peak=15.23GiB correct=True
+[17:26:58] 7/30 python_007 debugging  ok               in=7645 out=118 t=10.77s peak=15.23GiB correct=True
+[17:27:07] 8/30 python_008 debugging  ok               in=7598 out=64 t=6.7s peak=15.22GiB correct=True
+[17:27:25] 9/30 python_009 debugging  ok               in=7674 out=180 t=15.48s peak=15.23GiB correct=False
+[17:27:33] 10/30 python_010 debugging  ok               in=7685 out=55 t=6.08s peak=15.23GiB correct=False
+[17:27:43] 11/30 python_011 debugging  ok               in=7600 out=65 t=6.77s peak=15.22GiB correct=True
+[17:27:52] 12/30 python_012 debugging  ok               in=7605 out=67 t=6.92s peak=15.22GiB correct=True
+[17:28:15] 13/30 python_013 testgen    ok               in=7603 out=231 t=19.27s peak=15.22GiB correct=False
+[17:28:39] 14/30 python_014 testgen    ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=True
+[17:29:04] 15/30 python_015 testgen    ok               in=7624 out=256 t=21.18s peak=15.22GiB correct=False
+[17:29:28] 16/30 python_016 testgen    ok               in=7614 out=256 t=21.17s peak=15.22GiB correct=True
+[17:29:52] 17/30 python_017 testgen    ok               in=7656 out=256 t=21.23s peak=15.23GiB correct=False
+[17:30:17] 18/30 python_018 testgen    ok               in=7648 out=256 t=21.22s peak=15.23GiB correct=False
+[17:30:40] 19/30 python_019 longcode   ok               in=7626 out=256 t=21.19s peak=15.22GiB correct=None
+[17:31:04] 20/30 python_020 longcode   ok               in=7639 out=256 t=21.21s peak=15.23GiB correct=False
+[17:31:27] 21/30 python_021 longcode   ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=None
+[17:31:45] 22/30 python_022 longcode   ok               in=7618 out=179 t=15.35s peak=15.22GiB correct=True
+[17:32:09] 23/30 python_023 longcode   ok               in=7680 out=256 t=21.27s peak=15.23GiB correct=None
+[17:32:13] 24/30 python_024 longcode   ok               in=7625 out=2 t=2.07s peak=15.22GiB correct=True
+[17:32:19] 25/30 python_025 repoqa     ok               in=7602 out=19 t=3.34s peak=15.22GiB correct=True
+[17:32:24] 26/30 python_026 repoqa     ok               in=7598 out=9 t=2.59s peak=15.22GiB correct=False
+[17:32:39] 27/30 python_027 repoqa     ok               in=7612 out=153 t=13.38s peak=15.22GiB correct=False
+[17:32:51] 28/30 python_028 repoqa     ok               in=7628 out=104 t=9.71s peak=15.22GiB correct=None
+[17:32:56] 29/30 python_029 repoqa     ok               in=7624 out=2 t=2.07s peak=15.22GiB correct=True
+[17:33:19] 30/30 python_030 repoqa     ok               in=7630 out=256 t=21.19s peak=15.22GiB correct=False
+[17:33:19] done: 30 ok, 0 failed. Results: /home/sagemaker-user/kv_cache_research/results/json/position_offload_d000.json and /home/sagemaker-user/kv_cache_research/results/csv/position_offload_d000.csv
+[17:33:19] === depth 0.25 -> position_offload_d025 ===
+[17:33:19] 30 samples selected, 0 invalid, 0 already done
+[17:33:19] loaded in 88.47 s, dtype bfloat16, GPU weights 14.19 GiB, max_position_embeddings 32768
+[17:33:33] 1/30 python_001 completion ok               in=7665 out=117 t=10.71s peak=15.23GiB correct=True
+[17:33:51] 2/30 python_002 completion ok               in=7600 out=188 t=16.01s peak=15.22GiB correct=True
+[17:34:01] 3/30 python_003 completion ok               in=7664 out=77 t=7.7s peak=15.23GiB correct=True
+[17:34:21] 4/30 python_004 completion ok               in=7625 out=208 t=17.54s peak=15.22GiB correct=True
+[17:34:37] 5/30 python_005 completion ok               in=7670 out=157 t=13.74s peak=15.23GiB correct=False
+[17:35:00] 6/30 python_006 completion ok               in=7665 out=244 t=20.33s peak=15.23GiB correct=True
+[17:35:13] 7/30 python_007 debugging  ok               in=7645 out=108 t=10.02s peak=15.23GiB correct=True
+[17:35:22] 8/30 python_008 debugging  ok               in=7598 out=64 t=6.69s peak=15.22GiB correct=True
+[17:35:30] 9/30 python_009 debugging  ok               in=7674 out=45 t=5.3s peak=15.23GiB correct=False
+[17:35:38] 10/30 python_010 debugging  ok               in=7685 out=55 t=6.07s peak=15.23GiB correct=False
+[17:35:47] 11/30 python_011 debugging  ok               in=7600 out=65 t=6.77s peak=15.22GiB correct=True
+[17:35:59] 12/30 python_012 debugging  ok               in=7605 out=94 t=8.95s peak=15.22GiB correct=False
+[17:36:23] 13/30 python_013 testgen    ok               in=7603 out=256 t=21.15s peak=15.22GiB correct=False
+[17:36:48] 14/30 python_014 testgen    ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=False
+[17:37:12] 15/30 python_015 testgen    ok               in=7624 out=256 t=21.18s peak=15.22GiB correct=False
+[17:37:31] 16/30 python_016 testgen    ok               in=7614 out=190 t=16.17s peak=15.22GiB correct=False
+[17:37:56] 17/30 python_017 testgen    ok               in=7656 out=256 t=21.24s peak=15.23GiB correct=False
+[17:38:20] 18/30 python_018 testgen    ok               in=7648 out=256 t=21.21s peak=15.23GiB correct=False
+[17:38:44] 19/30 python_019 longcode   ok               in=7626 out=256 t=21.19s peak=15.22GiB correct=None
+[17:39:07] 20/30 python_020 longcode   ok               in=7639 out=256 t=21.21s peak=15.23GiB correct=False
+[17:39:31] 21/30 python_021 longcode   ok               in=7607 out=256 t=21.15s peak=15.22GiB correct=None
+[17:39:35] 22/30 python_022 longcode   ok               in=7618 out=5 t=2.3s peak=15.22GiB correct=True
+[17:39:59] 23/30 python_023 longcode   ok               in=7680 out=256 t=21.27s peak=15.23GiB correct=None
+[17:40:03] 24/30 python_024 longcode   ok               in=7625 out=2 t=2.08s peak=15.22GiB correct=True
+[17:40:09] 25/30 python_025 repoqa     ok               in=7602 out=19 t=3.34s peak=15.22GiB correct=True
+[17:40:14] 26/30 python_026 repoqa     ok               in=7598 out=9 t=2.59s peak=15.22GiB correct=False
+[17:40:37] 27/30 python_027 repoqa     ok               in=7612 out=256 t=21.17s peak=15.22GiB correct=True
+[17:41:01] 28/30 python_028 repoqa     ok               in=7628 out=256 t=21.19s peak=15.22GiB correct=None
+[17:41:05] 29/30 python_029 repoqa     ok               in=7624 out=2 t=2.07s peak=15.22GiB correct=True
+[17:41:27] 30/30 python_030 repoqa     ok               in=7630 out=225 t=18.84s peak=15.22GiB correct=False
+[17:41:27] done: 30 ok, 0 failed. Results: /home/sagemaker-user/kv_cache_research/results/json/position_offload_d025.json and /home/sagemaker-user/kv_cache_research/results/csv/position_offload_d025.csv
+[17:41:27] === depth 0.50 -> position_offload_d050 ===
+[17:41:27] 30 samples selected, 0 invalid, 0 already done
+[17:41:27] loaded in 88.47 s, dtype bfloat16, GPU weights 14.19 GiB, max_position_embeddings 32768
+[17:41:40] 1/30 python_001 completion ok               in=7665 out=117 t=10.72s peak=15.23GiB correct=True
+[17:41:58] 2/30 python_002 completion ok               in=7600 out=191 t=16.23s peak=15.22GiB correct=True
+[17:42:09] 3/30 python_003 completion ok               in=7664 out=77 t=7.7s peak=15.23GiB correct=True
+[17:42:29] 4/30 python_004 completion ok               in=7625 out=208 t=17.55s peak=15.22GiB correct=True
+[17:42:45] 5/30 python_005 completion ok               in=7670 out=157 t=13.74s peak=15.23GiB correct=False
+[17:43:08] 6/30 python_006 completion ok               in=7665 out=244 t=20.33s peak=15.23GiB correct=True
+[17:43:20] 7/30 python_007 debugging  ok               in=7645 out=108 t=10.02s peak=15.23GiB correct=True
+[17:43:29] 8/30 python_008 debugging  ok               in=7598 out=64 t=6.69s peak=15.22GiB correct=True
+[17:43:37] 9/30 python_009 debugging  ok               in=7674 out=45 t=5.3s peak=15.23GiB correct=False
+[17:43:46] 10/30 python_010 debugging  ok               in=7685 out=55 t=6.08s peak=15.23GiB correct=False
+[17:43:55] 11/30 python_011 debugging  ok               in=7600 out=65 t=6.77s peak=15.22GiB correct=True
+[17:44:04] 12/30 python_012 debugging  ok               in=7605 out=67 t=6.92s peak=15.22GiB correct=True
+[17:44:24] 13/30 python_013 testgen    ok               in=7603 out=198 t=16.77s peak=15.22GiB correct=True
+[17:44:49] 14/30 python_014 testgen    ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=False
+[17:45:13] 15/30 python_015 testgen    ok               in=7624 out=256 t=21.18s peak=15.22GiB correct=False
+[17:45:29] 16/30 python_016 testgen    ok               in=7614 out=138 t=12.25s peak=15.22GiB correct=False
+[17:45:53] 17/30 python_017 testgen    ok               in=7656 out=256 t=21.23s peak=15.23GiB correct=True
+[17:46:15] 18/30 python_018 testgen    ok               in=7648 out=219 t=18.41s peak=15.23GiB correct=True
+[17:46:38] 19/30 python_019 longcode   ok               in=7626 out=256 t=21.19s peak=15.22GiB correct=None
+[17:47:02] 20/30 python_020 longcode   ok               in=7639 out=256 t=21.21s peak=15.23GiB correct=False
+[17:47:25] 21/30 python_021 longcode   ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=None
+[17:47:30] 22/30 python_022 longcode   ok               in=7618 out=5 t=2.3s peak=15.22GiB correct=True
+[17:47:53] 23/30 python_023 longcode   ok               in=7680 out=256 t=21.27s peak=15.23GiB correct=None
+[17:47:58] 24/30 python_024 longcode   ok               in=7625 out=2 t=2.07s peak=15.22GiB correct=True
+[17:48:03] 25/30 python_025 repoqa     ok               in=7602 out=19 t=3.34s peak=15.22GiB correct=True
+[17:48:08] 26/30 python_026 repoqa     ok               in=7598 out=9 t=2.59s peak=15.22GiB correct=False
+[17:48:23] 27/30 python_027 repoqa     ok               in=7612 out=144 t=12.71s peak=15.22GiB correct=False
+[17:48:47] 28/30 python_028 repoqa     ok               in=7628 out=256 t=21.19s peak=15.22GiB correct=None
+[17:48:51] 29/30 python_029 repoqa     ok               in=7624 out=2 t=2.07s peak=15.22GiB correct=True
+[17:49:15] 30/30 python_030 repoqa     ok               in=7630 out=256 t=21.19s peak=15.22GiB correct=False
+[17:49:15] done: 30 ok, 0 failed. Results: /home/sagemaker-user/kv_cache_research/results/json/position_offload_d050.json and /home/sagemaker-user/kv_cache_research/results/csv/position_offload_d050.csv
+[17:49:15] === depth 0.75 -> position_offload_d075 ===
+[17:49:15] 30 samples selected, 0 invalid, 0 already done
+[17:49:15] loaded in 88.47 s, dtype bfloat16, GPU weights 14.19 GiB, max_position_embeddings 32768
+[17:49:28] 1/30 python_001 completion ok               in=7665 out=117 t=10.71s peak=15.23GiB correct=True
+[17:49:47] 2/30 python_002 completion ok               in=7600 out=191 t=16.23s peak=15.22GiB correct=True
+[17:49:57] 3/30 python_003 completion ok               in=7664 out=77 t=7.7s peak=15.23GiB correct=True
+[17:50:17] 4/30 python_004 completion ok               in=7625 out=208 t=17.55s peak=15.22GiB correct=True
+[17:50:33] 5/30 python_005 completion ok               in=7670 out=157 t=13.73s peak=15.23GiB correct=False
+[17:50:56] 6/30 python_006 completion ok               in=7665 out=244 t=20.34s peak=15.23GiB correct=True
+[17:51:08] 7/30 python_007 debugging  ok               in=7645 out=108 t=10.02s peak=15.23GiB correct=True
+[17:51:18] 8/30 python_008 debugging  ok               in=7598 out=64 t=6.7s peak=15.22GiB correct=True
+[17:51:27] 9/30 python_009 debugging  ok               in=7674 out=62 t=6.57s peak=15.23GiB correct=True
+[17:51:35] 10/30 python_010 debugging  ok               in=7685 out=55 t=6.07s peak=15.23GiB correct=False
+[17:51:44] 11/30 python_011 debugging  ok               in=7600 out=65 t=6.77s peak=15.22GiB correct=True
+[17:51:56] 12/30 python_012 debugging  ok               in=7605 out=98 t=9.24s peak=15.22GiB correct=False
+[17:52:20] 13/30 python_013 testgen    ok               in=7603 out=256 t=21.15s peak=15.22GiB correct=False
+[17:52:45] 14/30 python_014 testgen    ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=True
+[17:53:09] 15/30 python_015 testgen    ok               in=7624 out=256 t=21.19s peak=15.22GiB correct=False
+[17:53:34] 16/30 python_016 testgen    ok               in=7614 out=256 t=21.17s peak=15.22GiB correct=True
+[17:53:58] 17/30 python_017 testgen    ok               in=7656 out=256 t=21.24s peak=15.23GiB correct=False
+[17:54:20] 18/30 python_018 testgen    ok               in=7648 out=226 t=18.94s peak=15.23GiB correct=False
+[17:54:44] 19/30 python_019 longcode   ok               in=7626 out=256 t=21.19s peak=15.22GiB correct=None
+[17:55:07] 20/30 python_020 longcode   ok               in=7639 out=256 t=21.21s peak=15.23GiB correct=False
+[17:55:31] 21/30 python_021 longcode   ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=None
+[17:55:35] 22/30 python_022 longcode   ok               in=7618 out=5 t=2.3s peak=15.22GiB correct=True
+[17:55:59] 23/30 python_023 longcode   ok               in=7680 out=256 t=21.27s peak=15.23GiB correct=None
+[17:56:03] 24/30 python_024 longcode   ok               in=7625 out=2 t=2.07s peak=15.22GiB correct=True
+[17:56:09] 25/30 python_025 repoqa     ok               in=7602 out=19 t=3.33s peak=15.22GiB correct=True
+[17:56:14] 26/30 python_026 repoqa     ok               in=7598 out=9 t=2.59s peak=15.22GiB correct=False
+[17:56:38] 27/30 python_027 repoqa     ok               in=7612 out=256 t=21.17s peak=15.22GiB correct=False
+[17:57:01] 28/30 python_028 repoqa     ok               in=7628 out=256 t=21.19s peak=15.22GiB correct=None
+[17:57:05] 29/30 python_029 repoqa     ok               in=7624 out=2 t=2.07s peak=15.22GiB correct=True
+[17:57:29] 30/30 python_030 repoqa     ok               in=7630 out=256 t=21.19s peak=15.22GiB correct=False
+[17:57:29] done: 30 ok, 0 failed. Results: /home/sagemaker-user/kv_cache_research/results/json/position_offload_d075.json and /home/sagemaker-user/kv_cache_research/results/csv/position_offload_d075.csv
+[17:57:29] === depth 1.00 -> position_offload_d100 ===
+[17:57:29] 30 samples selected, 0 invalid, 0 already done
+[17:57:29] loaded in 88.47 s, dtype bfloat16, GPU weights 14.19 GiB, max_position_embeddings 32768
+[17:57:42] 1/30 python_001 completion ok               in=7665 out=117 t=10.71s peak=15.23GiB correct=True
+[17:58:01] 2/30 python_002 completion ok               in=7599 out=191 t=16.23s peak=15.22GiB correct=True
+[17:58:12] 3/30 python_003 completion ok               in=7663 out=89 t=8.6s peak=15.23GiB correct=True
+[17:58:32] 4/30 python_004 completion ok               in=7624 out=208 t=17.55s peak=15.22GiB correct=True
+[17:58:48] 5/30 python_005 completion ok               in=7669 out=157 t=13.74s peak=15.23GiB correct=False
+[17:59:11] 6/30 python_006 completion ok               in=7664 out=244 t=20.33s peak=15.23GiB correct=True
+[17:59:24] 7/30 python_007 debugging  ok               in=7645 out=108 t=10.02s peak=15.23GiB correct=True
+[17:59:33] 8/30 python_008 debugging  ok               in=7598 out=64 t=6.69s peak=15.22GiB correct=True
+[17:59:41] 9/30 python_009 debugging  ok               in=7674 out=54 t=5.98s peak=15.23GiB correct=False
+[17:59:50] 10/30 python_010 debugging  ok               in=7685 out=57 t=6.23s peak=15.23GiB correct=True
+[18:00:00] 11/30 python_011 debugging  ok               in=7600 out=75 t=7.52s peak=15.22GiB correct=True
+[18:00:09] 12/30 python_012 debugging  ok               in=7605 out=67 t=6.92s peak=15.22GiB correct=True
+[18:00:34] 13/30 python_013 testgen    ok               in=7603 out=256 t=21.15s peak=15.22GiB correct=True
+[18:00:58] 14/30 python_014 testgen    ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=False
+[18:01:22] 15/30 python_015 testgen    ok               in=7623 out=254 t=21.03s peak=15.22GiB correct=True
+[18:01:46] 16/30 python_016 testgen    ok               in=7614 out=256 t=21.16s peak=15.22GiB correct=False
+[18:02:10] 17/30 python_017 testgen    ok               in=7656 out=256 t=21.23s peak=15.23GiB correct=False
+[18:02:22] 18/30 python_018 testgen    ok               in=7648 out=91 t=8.75s peak=15.23GiB correct=True
+[18:02:46] 19/30 python_019 longcode   ok               in=7626 out=256 t=21.18s peak=15.22GiB correct=None
+[18:03:09] 20/30 python_020 longcode   ok               in=7639 out=256 t=21.21s peak=15.23GiB correct=False
+[18:03:33] 21/30 python_021 longcode   ok               in=7607 out=256 t=21.16s peak=15.22GiB correct=None
+[18:03:39] 22/30 python_022 longcode   ok               in=7618 out=29 t=4.09s peak=15.22GiB correct=True
+[18:04:03] 23/30 python_023 longcode   ok               in=7680 out=256 t=21.27s peak=15.23GiB correct=None
+[18:04:07] 24/30 python_024 longcode   ok               in=7625 out=2 t=2.07s peak=15.22GiB correct=True
+[18:04:13] 25/30 python_025 repoqa     ok               in=7601 out=19 t=3.34s peak=15.22GiB correct=True
+[18:04:18] 26/30 python_026 repoqa     ok               in=7597 out=9 t=2.59s peak=15.22GiB correct=False
+[18:04:41] 27/30 python_027 repoqa     ok               in=7611 out=256 t=21.16s peak=15.22GiB correct=True
+[18:05:04] 28/30 python_028 repoqa     ok               in=7627 out=251 t=20.81s peak=15.22GiB correct=None
+[18:05:09] 29/30 python_029 repoqa     ok               in=7623 out=2 t=2.07s peak=15.22GiB correct=True
+[18:05:29] 30/30 python_030 repoqa     ok               in=7629 out=219 t=18.39s peak=15.22GiB correct=False
+[18:05:29] done: 30 ok, 0 failed. Results: /home/sagemaker-user/kv_cache_research/results/json/position_offload_d100.json and /home/sagemaker-user/kv_cache_research/results/csv/position_offload_d100.csv
+[18:05:29] done. Analyse with: python scripts/analyze_position.py --prefix position_offload
+80/80 responses identical to the full cache (100%)
+OK
