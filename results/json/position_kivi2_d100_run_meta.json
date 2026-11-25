@@ -1,0 +1,90 @@
+{
+  "started_at": "2026-11-25T06:33:41+00:00",
+  "python": "3.13.18",
+  "torch": "2.12.0",
+  "gpu": "NVIDIA A10G",
+  "config": {
+    "model": {
+      "name": "Qwen/Qwen2.5-Coder-7B-Instruct",
+      "revision": "main",
+      "trust_remote_code": false,
+      "dtype": "auto",
+      "attn_implementation": "sdpa",
+      "device_map": "cuda",
+      "quantization": "none",
+      "fallback_name": "Qwen/Qwen2.5-Coder-1.5B-Instruct"
+    },
+    "experiment": {
+      "experiment_id": "position_kivi2_d100",
+      "workflow": "all",
+      "cache_method": "kivi2",
+      "context_length": 8192,
+      "max_new_tokens": 256,
+      "batch_size": 1,
+      "temperature": 0.0,
+      "do_sample": false,
+      "repetition_penalty": 1.0,
+      "seed": 0,
+      "overflow_policy": "skip",
+      "measure_prefill": true,
+      "warmup": false
+    },
+    "context_fill": {
+      "enabled": true,
+      "target_tokens": 7680,
+      "depth": 1.0,
+      "seed": 1234
+    },
+    "kivi": {
+      "bits": 4,
+      "group_size": 32,
+      "residual_length": 128
+    },
+    "snapkv": {
+      "budget_tokens": 1024,
+      "window": 32,
+      "kernel_size": 7,
+      "pooling": "max"
+    },
+    "dataset": {
+      "path": "datasets/sample_tasks.json",
+      "split": "all",
+      "max_samples": 30
+    },
+    "evaluation": {
+      "exec_timeout_seconds": 10
+    },
+    "output": {
+      "results_directory": "results",
+      "save_responses": true
+    },
+    "s3": {
+      "bucket": "",
+      "prefix": "kv_cache_research"
+    }
+  },
+  "model_info": {
+    "model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+    "revision": "main",
+    "dtype": "bfloat16",
+    "quantization": "none",
+    "attn_implementation": "sdpa",
+    "device": "cuda:0",
+    "num_parameters": 7615616512,
+    "parameter_bytes": 15231233536,
+    "load_seconds": 74.48,
+    "is_primary_model": true,
+    "max_position_embeddings": 32768,
+    "sliding_window": null,
+    "rope_scaling": {
+      "rope_theta": 1000000.0,
+      "rope_type": "default"
+    },
+    "num_hidden_layers": 28,
+    "num_attention_heads": 28,
+    "num_key_value_heads": 4,
+    "head_dim": 128,
+    "gpu_model_memory_bytes": 15232282624,
+    "gpu_peak_during_load_bytes": 15232282624
+  }
+}
