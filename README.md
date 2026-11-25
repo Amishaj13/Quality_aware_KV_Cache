@@ -20,7 +20,7 @@ bytes, scores the answers by executing hidden unit tests, and writes JSON, CSV a
 | End-to-end run of all 30 tasks | CPU, tiny **random-weight** Qwen2-architecture model | runs, saves, evaluates, charts (output is gibberish by design) |
 | Qwen2.5-Coder-7B on GPU | SageMaker, NVIDIA A10G (ml.g5.xlarge) | **done**: baseline_001, position sweep, LongCodeU 0~8K (see `results/`) |
 
-A plain-language walkthrough of everything built and measured is in [docs/PIPELINE_EXPLAINED.md](docs/PIPELINE_EXPLAINED.md).
+A step-by-step walkthrough of the pipeline is in [docs/PIPELINE_WALKTHROUGH.md](docs/PIPELINE_WALKTHROUGH.md); the full research and module guide is in [docs/PIPELINE_EXPLAINED.md](docs/PIPELINE_EXPLAINED.md).
 
 ## Hardware plan (from your SageMaker quotas)
 
