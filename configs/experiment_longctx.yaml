@@ -20,6 +20,17 @@ context_fill:
   target_tokens: 7680        # leaves room for 256 new tokens + chat template
   depth: 0.5
   seed: 1234
+# Settings for the compressed cache methods (used only when cache_method selects them).
+kivi:                        # cache_method: kivi4 | kivi2 (or kivi + bits)
+  bits: 4
+  group_size: 32             # tokens per key group / channels per value group
+  residual_length: 128       # newest tokens kept in 16-bit
+snapkv:                      # cache_method: snapkv
+  budget_tokens: 1024        # prompt tokens kept per layer and head (prompts shorter than this are untouched)
+  window: 32                 # observation window: the last prompt tokens whose attention picks the rest
+  kernel_size: 7             # max-pool width, keeps neighbours of important tokens
+  pooling: max
+
 dataset:
   path: datasets/sample_tasks.json
   split: all

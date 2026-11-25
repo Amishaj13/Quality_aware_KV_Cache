@@ -74,6 +74,18 @@ def validate_config(cfg):
         raise ConfigError(f"cache_method '{cm}' is planned for the next phase and not implemented yet. "
                           f"Implemented: {sorted(IMPLEMENTED)}")
     _require(cm in IMPLEMENTED, f"unknown cache_method '{cm}'. Implemented: {sorted(IMPLEMENTED)}")
+    k = cfg.get("kivi") or {}
+    _require(k.get("bits", 4) in (2, 4), "kivi.bits must be 2 or 4")
+    for key, default in (("group_size", 32), ("residual_length", 128)):
+        _require(isinstance(k.get(key, default), int) and k.get(key, default) > 0, f"kivi.{key} must be a positive int")
+    _require(k.get("residual_length", 128) % k.get("group_size", 32) == 0,
+             "kivi.residual_length must be a multiple of kivi.group_size")
+    sk = cfg.get("snapkv") or {}
+    for key, default in (("budget_tokens", 1024), ("window", 32), ("kernel_size", 7)):
+        _require(isinstance(sk.get(key, default), int) and sk.get(key, default) > 0,
+                 f"snapkv.{key} must be a positive int")
+    _require(sk.get("window", 32) < sk.get("budget_tokens", 1024), "snapkv.window must be below snapkv.budget_tokens")
+    _require(sk.get("pooling", "max") in ("max", "avg"), "snapkv.pooling must be max or avg")
     for k in ("context_length", "max_new_tokens", "batch_size"):
         _require(isinstance(e.get(k), int) and not isinstance(e.get(k), bool) and e[k] > 0,
                  f"experiment.{k} must be a positive integer")

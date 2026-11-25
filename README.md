@@ -139,6 +139,33 @@ longer than 8K (paper average ~55K tokens). This subset uses the 0~8K bucket to 
 The 8~16K bucket should still fit a 24 GB GPU with the full cache (`--bucket 8~16K --max-prompt-tokens 15872`
 and `context_length: 16384`); 32K is borderline, and beyond that is where compression becomes necessary.
 
+## KIVI and SnapKV (first compressed caches)
+Two compression baselines plug into the same runner, so every number is measured exactly like the full cache:
+
+| method | what it does | `--cache-method` |
+|---|---|---|
+| **KIVI** (Liu et al., ICML 2024) | stores K/V in 4 or 2 bits: keys per channel, values per token, the newest <128 tokens stay 16-bit | `kivi4`, `kivi2` |
+| **SnapKV** (Li et al., NeurIPS 2024) | after the prompt is read, keeps only the prompt tokens that the last 32 prompt tokens attend to (`snapkv.budget_tokens`, default 1024) | `snapkv` (+ `--snapkv-budget N`) |
+
+```bash
+bash scripts/run_kivi_snapkv.sh          # kivi4, kivi2, snapkv 1024/2048 on custom + LongCodeU + position; then the report
+python main.py compare                   # just rebuild results/comparison/methods_comparison.md
+# single runs:
+python main.py run --cache-method kivi4                                          # -> baseline_001_kivi4
+python main.py run --config configs/experiment_longcodeu.yaml --cache-method snapkv --snapkv-budget 1024   # -> longcodeu_8k_snapkv1024
+python main.py position --cache-method kivi2                                     # -> position_kivi2_d000 ...
+```
+The report gives, per workload and method, quality retention (method ÷ full × 100 on the same samples) and memory
+reduction (KV bytes actually stored). Implementation notes:
+- KIVI codes are really packed into uint8 with their min/scale, so `kv_cache_bytes` is the true storage. Attention
+  runs on dequantized 16-bit values (same outputs as a fused kernel, slower decoding than the official CUDA kernels,
+  so its TPOT is not a speed result).
+- SnapKV recomputes the window queries with a forward hook on each attention module; the model code is unchanged and
+  prefill attention is exact. Prompts shorter than the budget are not compressed (`snapkv_compressed` per row):
+  the 30 custom tasks (~240 tokens) are therefore unchanged by SnapKV, which acts on LongCodeU and the 8K position test.
+- `tests/test_cache_methods.py` checks quantization error, packing, measured bytes, and that SnapKV picks the same
+  tokens as the model's own attention weights.
+
 ## Research framing (from the project plan)
 Base paper: Yuan et al., *KV Cache Compression, But What Must We Give in Return?* (EMNLP 2024 Findings),
 which benchmarks KV-cache compression on LongBench and Needle-in-a-Haystack. This project narrows it to
@@ -218,11 +245,11 @@ The FP16-vs-KIVI (2/4-bit) harness built before this pipeline is kept unchanged 
 `kivi_baseline/`. It needs its own conda env (KIVI pins torch 2.4.1 + transformers 4.43.1 and a
 custom CUDA kernel) and Llama-3.1-8B licence approval; see `kivi_baseline/README.md`. It runs on the
 same `ml.g6.xlarge`. Its synthetic-code haystack generator is reused here for the long-context fill,
-and it is the reference for adding KIVI as a `cache_methods/` entry (see `docs/ROADMAP.md`).
+and was the reference for `cache_methods/kivi.py`, which runs inside this pipeline on Qwen with the current transformers.
 Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-retrieval task.
 
 ## Known limitations
-- No compression method has been run yet; all GPU results are full-cache baselines.
+- KIVI and SnapKV are implemented; their GPU results are pending (run `scripts/run_kivi_snapkv.sh`).
 - 30 hand-written tasks are short (a few hundred tokens each) unless padded with the long-context config; the
   padding is synthetic code, so it tests position sensitivity, not real repository understanding.
 - The position sweep uses synthetic filler code, so it measures retrieval of the task code by position, not real cross-file reasoning.
@@ -234,6 +261,5 @@ Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-re
   which is why later compression experiments need longer contexts or larger batches to show effects.
 
 ## Next steps
-See [docs/ROADMAP.md](docs/ROADMAP.md): StreamingLLM and SnapKV first, then H2O, PyramidKV, KIVI
-(ported from `kivi_baseline/`), EvolKV; public benchmarks after licence checks; position
+See [docs/ROADMAP.md](docs/ROADMAP.md): KIVI and SnapKV are done; next StreamingLLM, CPU offloading, H2O, PyramidKV, EvolKV; public benchmarks after licence checks; position
 sensitivity per method (the full-cache sweep exists); Pareto analysis; then the recommender.

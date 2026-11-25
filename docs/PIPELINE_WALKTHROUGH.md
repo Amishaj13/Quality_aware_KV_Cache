@@ -84,14 +84,14 @@ file says so:
 | Setting | Value | Why |
 |---|---|---|
 | `experiment_id` | `baseline_001` | Names every output file |
-| `cache_method` | `full` | Normal, uncompressed memory (later: `snapkv`, `kivi`, ...) |
+| `cache_method` | `full` | Normal, uncompressed memory. Also `kivi4`, `kivi2`, `snapkv` |
 | `context_length` | 8192 | Max tokens for prompt + answer |
 | `max_new_tokens` | 256 (512 for LongCodeU) | Longest answer allowed |
 | `do_sample: false`, `temperature: 0` | greedy | Same input gives the same answer every time |
 | `overflow_policy` | `skip` | Too-long prompts are recorded as `context_overflow`, never silently cut |
 | `warmup` | true | One untimed run first, so GPU start-up doesn't distort the first timing |
 
-The settings are checked before anything runs. For example, asking for `cache_method: snapkv` today stops
+The settings are checked before anything runs. For example, asking for `cache_method: h2o` (not built yet) stops
 immediately with "not implemented yet", instead of quietly running the full cache.
 
 ---
@@ -234,15 +234,15 @@ middle or end of a long input.
 
 ---
 
-## 9. How compression will plug in (the next phase)
+## 9. How compression plugs in
 
 The pipeline was built so that adding a compression method changes **only one step**, step 5 of
 Stage 3 (how the KV cache is stored during generation):
 
 ```
 Stage 3, step 5:   cache_method: full     → keep every token's memory      (done)
-                   cache_method: snapkv   → keep only important tokens       (planned)
-                   cache_method: kivi     → store memory in 2 or 4 bits      (planned)
+                   cache_method: snapkv   → keep only important tokens       (done)
+                   cache_method: kivi4/2  → store memory in 4 or 2 bits      (done)
 ```
 
 Each new method is a small class in `cache_methods/`. Everything else (tasks, timing, scoring,
@@ -251,7 +251,9 @@ reports) stays the same. The comparison then runs automatically:
 - **Quality retention** = compressed score / full-cache score × 100
 - **Memory reduction** = (full KV − compressed KV) / full KV × 100
 
-The order planned in `docs/ROADMAP.md` is StreamingLLM → SnapKV → H2O → PyramidKV → KIVI → EvolKV.
+KIVI and SnapKV are done: `bash scripts/run_kivi_snapkv.sh` runs both on every workload and
+`python main.py compare` writes `results/comparison/methods_comparison.md`. Next: StreamingLLM,
+CPU offloading, prefix caching and paging, then the quality-aware method.
 
 ---
 
