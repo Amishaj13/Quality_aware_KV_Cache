@@ -139,32 +139,46 @@ longer than 8K (paper average ~55K tokens). This subset uses the 0~8K bucket to 
 The 8~16K bucket should still fit a 24 GB GPU with the full cache (`--bucket 8~16K --max-prompt-tokens 15872`
 and `context_length: 16384`); 32K is borderline, and beyond that is where compression becomes necessary.
 
-## KIVI and SnapKV (first compressed caches)
-Two compression baselines plug into the same runner, so every number is measured exactly like the full cache:
+## KIVI, SnapKV, StreamingLLM and CPU offloading
+These baselines plug into the same runner, so every number is measured exactly like the full cache:
 
 | method | what it does | `--cache-method` |
 |---|---|---|
 | **KIVI** (Liu et al., ICML 2024) | stores K/V in 4 or 2 bits: keys per channel, values per token, the newest <128 tokens stay 16-bit | `kivi4`, `kivi2` |
 | **SnapKV** (Li et al., NeurIPS 2024) | after the prompt is read, keeps only the prompt tokens that the last 32 prompt tokens attend to (`snapkv.budget_tokens`, default 1024) | `snapkv` (+ `--snapkv-budget N`) |
+| **StreamingLLM** (Xiao et al., ICLR 2024) | keeps the first 4 tokens ("attention sinks") + the most recent tokens, drops the middle; `streamingllm.budget_tokens` (default 1024) in total, the window slides while generating | `streamingllm` (+ `--streaming-budget N`), tag `streaming<N>` |
+| **CPU offloading** (transformers `DynamicCache(offloading=True)`) | keeps the full 16-bit cache but in CPU memory; each layer's K/V are copied to the GPU just before that layer runs. Same answers as the full cache, less GPU memory, slower tokens | `offload` |
 
 ```bash
 bash scripts/run_kivi_snapkv.sh          # kivi4, kivi2, snapkv 1024/2048 on custom + LongCodeU + position; then the report
+bash scripts/run_streaming_offload.sh    # streaming 1024/2048 + offload on the same workloads; then the report
+METHODS="streamingllm:4096" bash scripts/run_methods.sh   # any other method/budget
 python main.py compare                   # just rebuild results/comparison/methods_comparison.md
 # single runs:
 python main.py run --cache-method kivi4                                          # -> baseline_001_kivi4
 python main.py run --config configs/experiment_longcodeu.yaml --cache-method snapkv --snapkv-budget 1024   # -> longcodeu_8k_snapkv1024
 python main.py position --cache-method kivi2                                     # -> position_kivi2_d000 ...
+python main.py run --config configs/experiment_longcodeu.yaml --cache-method streamingllm --streaming-budget 1024   # -> longcodeu_8k_streaming1024
+python main.py run --cache-method offload                                        # -> baseline_001_offload (needs a GPU)
 ```
 The report gives, per workload and method, quality retention (method ÷ full × 100 on the same samples) and memory
-reduction (KV bytes actually stored). Implementation notes:
+reduction (KV bytes held on the GPU; for every method but `offload` that is all of the stored cache), plus
+`slowdown_x` (time per generated token ÷ the full cache's). Implementation notes:
 - KIVI codes are really packed into uint8 with their min/scale, so `kv_cache_bytes` is the true storage. Attention
   runs on dequantized 16-bit values (same outputs as a fused kernel, slower decoding than the official CUDA kernels,
   so its TPOT is not a speed result).
 - SnapKV recomputes the window queries with a forward hook on each attention module; the model code is unchanged and
   prefill attention is exact. Prompts shorter than the budget are not compressed (`snapkv_compressed` per row):
   the 30 custom tasks (~240 tokens) are therefore unchanged by SnapKV, which acts on LongCodeU and the 8K position test.
-- `tests/test_cache_methods.py` checks quantization error, packing, measured bytes, and that SnapKV picks the same
-  tokens as the model's own attention weights.
+- StreamingLLM uses the same setup as SnapKV so the two eviction methods compare fairly: exact prefill, then the stored
+  K/V are cut to sinks + recent window; kept tokens keep their original rotary positions (the paper re-numbers them to
+  run past the trained length, which 8K never reaches on Qwen2.5). Like SnapKV it leaves the short custom tasks
+  untouched at 1024/2048 (`streaming_compressed` per row).
+- Offloading reports `kv_cache_gpu_bytes` / `kv_cache_cpu_bytes`; the KV on the GPU is about one layer of 28. Its
+  TPOT includes the PCIe copies of the whole cache on every token, which is the cost being measured.
+- `tests/test_cache_methods.py` checks quantization error, packing, measured bytes, that SnapKV picks the same
+  tokens as the model's own attention weights, that a StreamingLLM decoding step equals full attention with the
+  evicted tokens masked out, and (on a GPU) that offloading gives the same tokens as the full cache.
 
 ## Research framing (from the project plan)
 Base paper: Yuan et al., *KV Cache Compression, But What Must We Give in Return?* (EMNLP 2024 Findings),
@@ -249,7 +263,7 @@ and was the reference for `cache_methods/kivi.py`, which runs inside this pipeli
 Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-retrieval task.
 
 ## Known limitations
-- KIVI and SnapKV are implemented; their GPU results are pending (run `scripts/run_kivi_snapkv.sh`).
+- StreamingLLM and CPU offloading are implemented; their GPU results are pending (run `scripts/run_streaming_offload.sh`).
 - 30 hand-written tasks are short (a few hundred tokens each) unless padded with the long-context config; the
   padding is synthetic code, so it tests position sensitivity, not real repository understanding.
 - The position sweep uses synthetic filler code, so it measures retrieval of the task code by position, not real cross-file reasoning.
@@ -261,5 +275,5 @@ Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-re
   which is why later compression experiments need longer contexts or larger batches to show effects.
 
 ## Next steps
-See [docs/ROADMAP.md](docs/ROADMAP.md): KIVI and SnapKV are done; next StreamingLLM, CPU offloading, H2O, PyramidKV, EvolKV; public benchmarks after licence checks; position
+See [docs/ROADMAP.md](docs/ROADMAP.md): KIVI, SnapKV, StreamingLLM and CPU offloading are done; next H2O, PyramidKV, EvolKV; public benchmarks after licence checks; position
 sensitivity per method (the full-cache sweep exists); Pareto analysis; then the recommender.

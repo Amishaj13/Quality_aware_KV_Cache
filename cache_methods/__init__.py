@@ -1,15 +1,18 @@
 """KV-cache method interface.
 
-Implemented: the full cache (baseline), KIVI (2/4-bit quantization) and SnapKV (prompt
-token eviction). The remaining planned methods are registered by name so configs fail
+Implemented: the full cache (baseline), KIVI (2/4-bit quantization), SnapKV (prompt
+token eviction by attention), StreamingLLM (attention sinks + recent window) and CPU
+offloading of the full cache. The remaining planned methods are registered by name so configs fail
 loudly instead of silently falling back to the full cache. Each method implements
 CacheMethod (see base.py) and is selected with experiment.cache_method; its settings
-live in the top-level `kivi:` / `snapkv:` config blocks.
+live in the top-level `kivi:` / `snapkv:` / `streamingllm:` config blocks.
 """
 from cache_methods.base import CacheMethod
 from cache_methods.full import FullCache
 from cache_methods.kivi import KIVICache
+from cache_methods.offload import OffloadCache
 from cache_methods.snapkv import SnapKVCache
+from cache_methods.streamingllm import StreamingLLMCache
 
 # name -> factory(cfg). "kivi" takes its bit width from kivi.bits; kivi4/kivi2 fix it.
 IMPLEMENTED = {
@@ -18,12 +21,13 @@ IMPLEMENTED = {
     "kivi4": lambda cfg: KIVICache.from_config(cfg, bits=4),
     "kivi2": lambda cfg: KIVICache.from_config(cfg, bits=2),
     "snapkv": lambda cfg: SnapKVCache.from_config(cfg),
+    "streamingllm": lambda cfg: StreamingLLMCache.from_config(cfg),
+    "offload": lambda cfg: OffloadCache(),
 }
 
 # Planned (see docs/ROADMAP.md). Not implemented.
 PLANNED = {
     "h2o": "Heavy-Hitter Oracle token eviction",
-    "streamingllm": "attention sinks + recent window",
     "pyramidkv": "layer-wise pyramidal KV budget",
     "evolkv": "evolutionary layer-wise budget search",
 }
@@ -38,5 +42,5 @@ def get_cache_method(name: str, cfg=None) -> CacheMethod:
 
 
 def method_tag(cfg) -> str:
-    """Short label used in experiment ids and charts: full, kivi4, kivi2, snapkv1024."""
+    """Short label used in experiment ids and charts: full, kivi4, kivi2, snapkv1024, streaming1024, offload."""
     return get_cache_method(cfg["experiment"].get("cache_method", "full"), cfg).name

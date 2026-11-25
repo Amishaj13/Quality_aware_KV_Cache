@@ -52,9 +52,10 @@ def parse_args(argv=None):
     p.add_argument("--max-samples", type=int)
     p.add_argument("--workflow")
     p.add_argument("--split")
-    p.add_argument("--cache-method", help="full | kivi4 | kivi2 | kivi | snapkv (default: from the config). "
+    p.add_argument("--cache-method", help="full | kivi4 | kivi2 | kivi | snapkv | streamingllm | offload (default: from the config). "
                    "Without --experiment-id the id gets the method appended, e.g. baseline_001_kivi4")
     p.add_argument("--snapkv-budget", type=int, help="override snapkv.budget_tokens (prompt tokens kept)")
+    p.add_argument("--streaming-budget", type=int, help="override streamingllm.budget_tokens (sinks + recent window)")
     p.add_argument("--quantization", choices=["none", "4bit"])
     p.add_argument("--device-map", help="cuda | auto | cpu (cpu only for tiny debugging models)")
     p.add_argument("--resume", action="store_true", help="skip samples with status ok in the existing log")
@@ -64,11 +65,13 @@ def parse_args(argv=None):
 
 
 def build_overrides(a):
-    o = {"model": {}, "experiment": {}, "dataset": {}, "snapkv": {}}
+    o = {"model": {}, "experiment": {}, "dataset": {}, "snapkv": {}, "streamingllm": {}}
     if getattr(a, "cache_method", None):
         o["experiment"]["cache_method"] = a.cache_method
     if getattr(a, "snapkv_budget", None):
         o["snapkv"]["budget_tokens"] = a.snapkv_budget
+    if getattr(a, "streaming_budget", None):
+        o["streamingllm"]["budget_tokens"] = a.streaming_budget
     if a.model:
         o["model"]["name"] = a.model
     if a.quantization:
@@ -222,7 +225,7 @@ def experiment_id_for(base_id, tag):
 def main(argv=None):
     a = parse_args(argv)
     cfg = load_config(a.config, a.model_config, build_overrides(a))
-    if (a.cache_method or a.snapkv_budget) and not a.experiment_id:
+    if (a.cache_method or a.snapkv_budget or a.streaming_budget) and not a.experiment_id:
         cfg["experiment"]["experiment_id"] = experiment_id_for(cfg["experiment"]["experiment_id"], method_tag(cfg))
         log(f"experiment_id: {cfg['experiment']['experiment_id']}")
     return run(cfg, resume=a.resume, overwrite=a.overwrite, allow_shared_gpu=a.allow_shared_gpu)

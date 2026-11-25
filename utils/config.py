@@ -86,6 +86,12 @@ def validate_config(cfg):
                  f"snapkv.{key} must be a positive int")
     _require(sk.get("window", 32) < sk.get("budget_tokens", 1024), "snapkv.window must be below snapkv.budget_tokens")
     _require(sk.get("pooling", "max") in ("max", "avg"), "snapkv.pooling must be max or avg")
+    st = cfg.get("streamingllm") or {}
+    for key, default in (("budget_tokens", 1024), ("sink_tokens", 4)):
+        _require(isinstance(st.get(key, default), int) and st.get(key, default) > 0,
+                 f"streamingllm.{key} must be a positive int")
+    _require(st.get("sink_tokens", 4) < st.get("budget_tokens", 1024),
+             "streamingllm.sink_tokens must be below streamingllm.budget_tokens")
     for k in ("context_length", "max_new_tokens", "batch_size"):
         _require(isinstance(e.get(k), int) and not isinstance(e.get(k), bool) and e[k] > 0,
                  f"experiment.{k} must be a positive integer")

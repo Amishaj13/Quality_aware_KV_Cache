@@ -11,6 +11,7 @@ compression method will later be compared against.
   python scripts/run_position_sweep.py --resume
   python scripts/run_position_sweep.py --cache-method kivi4        # saved as position_kivi4_d000 ...
   python scripts/run_position_sweep.py --cache-method snapkv --snapkv-budget 1024
+  python scripts/run_position_sweep.py --cache-method streamingllm --streaming-budget 1024   # position_streaming1024_d000 ...
 """
 import argparse
 import copy
@@ -35,18 +36,21 @@ def main(argv=None):
     p.add_argument("--depths", type=float, nargs="+", default=DEFAULT_DEPTHS)
     p.add_argument("--target-tokens", type=int)
     p.add_argument("--max-samples", type=int)
-    p.add_argument("--cache-method", help="full | kivi4 | kivi2 | kivi | snapkv (default: from the config)")
+    p.add_argument("--cache-method", help="full | kivi4 | kivi2 | kivi | snapkv | streamingllm | offload (default: from the config)")
     p.add_argument("--snapkv-budget", type=int)
+    p.add_argument("--streaming-budget", type=int)
     p.add_argument("--prefix", help="experiment id prefix (default: position_<method>, e.g. position_kivi4)")
     p.add_argument("--resume", action="store_true")
     p.add_argument("--overwrite", action="store_true")
     a = p.parse_args(argv)
 
-    ov = {"model": {}, "dataset": {}, "context_fill": {"enabled": True}, "experiment": {}, "snapkv": {}}
+    ov = {"model": {}, "dataset": {}, "context_fill": {"enabled": True}, "experiment": {}, "snapkv": {}, "streamingllm": {}}
     if a.cache_method:
         ov["experiment"]["cache_method"] = a.cache_method
     if a.snapkv_budget:
         ov["snapkv"]["budget_tokens"] = a.snapkv_budget
+    if a.streaming_budget:
+        ov["streamingllm"]["budget_tokens"] = a.streaming_budget
     if a.model:
         ov["model"]["name"] = a.model
     if a.device_map:
