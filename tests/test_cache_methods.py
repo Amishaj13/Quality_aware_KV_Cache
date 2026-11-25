@@ -177,3 +177,109 @@ def test_method_tags_and_config():
         load_config(overrides={"kivi": {"bits": 3}})
     with pytest.raises(ConfigError, match="window"):
         load_config(overrides={"snapkv": {"budget_tokens": 16, "window": 32}})
+
+
+# --------------------------------------------------------------------------- StreamingLLM
+def test_streaming_keep_slice():
+    from cache_methods.streamingllm import keep_slice
+    t = torch.arange(20).view(1, 1, 20, 1)
+    assert keep_slice(t, 4, 10).flatten().tolist() == [0, 1, 2, 3, 14, 15, 16, 17, 18, 19]
+    assert keep_slice(t, 4, 30).shape[-2] == 20          # shorter than the budget: untouched
+
+
+def test_streaming_cache_stays_within_budget(small_model):
+    ids = torch.randint(0, 500, (1, 300))
+    method = get_cache_method("streamingllm", {"streamingllm": {"budget_tokens": 64, "sink_tokens": 4}})
+    assert method.name == "streaming64"
+    toks, cache = generate(small_model, method, ids, n=20)
+    assert len(toks) == 20
+    assert cache.get_seq_length() == 300 + 20 - 1         # logical length keeps counting
+    for layer in cache.layers:
+        assert layer.keys.shape[-2] == 64 and layer.values.shape[-2] == 64
+    stats = method.cache_stats(cache)
+    assert stats["streaming_prompt_tokens"] == 300 and stats["streaming_kept_prompt_tokens"] == 64
+    assert stats["streaming_evicted_tokens"] == 300 + 19 - 64 and stats["streaming_compressed"]
+    assert cache_bytes(cache) == theoretical_kv_bytes(small_model.config, 64, bytes_per_elem=2)
+
+
+def test_streaming_keeps_sinks_and_latest_tokens(small_model):
+    """The stored keys are exactly the sinks and the newest tokens of the full cache."""
+    ids = torch.randint(0, 500, (1, 200))
+    _, full = generate(small_model, get_cache_method("full", {}), ids, n=1)
+    method = get_cache_method("streamingllm", {"streamingllm": {"budget_tokens": 50, "sink_tokens": 4}})
+    _, st = generate(small_model, method, ids, n=1)
+    fk, sk = full.layers[0].keys, st.layers[0].keys
+    assert torch.equal(sk[..., :4, :], fk[..., :4, :])
+    assert torch.equal(sk[..., 4:, :], fk[..., -46:, :])
+
+
+def test_streaming_is_exact_when_everything_fits(small_model):
+    ids = torch.randint(0, 500, (1, 150))
+    full, _ = generate(small_model, get_cache_method("full", {}), ids)
+    st, cache = generate(small_model, get_cache_method("streamingllm", {"streamingllm": {"budget_tokens": 256}}), ids)
+    assert st == full
+    assert not get_cache_method("streamingllm", {"streamingllm": {"budget_tokens": 256}}).cache_stats(cache)[
+        "streaming_compressed"]
+
+
+def test_streaming_config_validation(tmp_path):
+    with pytest.raises(ConfigError):
+        load_config(overrides={"experiment": {"cache_method": "streamingllm"},
+                               "streamingllm": {"budget_tokens": 4, "sink_tokens": 4}})
+    cfg = load_config(overrides={"experiment": {"cache_method": "streamingllm"},
+                                 "streamingllm": {"budget_tokens": 2048}})
+    assert method_tag(cfg) == "streaming2048"
+
+
+# --------------------------------------------------------------------------- CPU offloading
+def test_offload_registered_and_tagged():
+    cfg = load_config(overrides={"experiment": {"cache_method": "offload"}})
+    assert method_tag(cfg) == "offload"
+    assert not get_cache_method("offload").compresses
+
+
+def test_offload_bytes_by_device():
+    from transformers.cache_utils import DynamicCache
+    from cache_methods.offload import bytes_by_device
+    c = DynamicCache()
+    c.update(torch.zeros(1, 2, 10, 8, dtype=torch.bfloat16), torch.zeros(1, 2, 10, 8, dtype=torch.bfloat16), 0)
+    assert bytes_by_device(c) == (0, 2 * 2 * 10 * 8 * 2)   # on a CPU-only machine everything is "cpu"
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="offloading needs a CUDA GPU")
+def test_offload_matches_full_cache_and_moves_kv_to_cpu(small_model):
+    model = small_model.to("cuda")
+    ids = torch.randint(0, 500, (1, 300), device="cuda")
+    full, fc = generate(model, get_cache_method("full", {}), ids)
+    method = get_cache_method("offload", {})
+    off, oc = generate(model, method, ids)
+    assert off == full
+    assert cache_bytes(oc) == cache_bytes(fc)                 # same cache, different place
+    stats = method.cache_stats(oc)
+    assert stats["kv_cache_cpu_bytes"] > stats["kv_cache_gpu_bytes"]
+    small_model.to("cpu")
+
+
+@pytest.mark.parametrize("impl", ["eager", "sdpa"])
+def test_streaming_decode_equals_masked_full_attention(impl):
+    """One decoding step with the StreamingLLM cache gives the same logits as the full cache
+    with every evicted token masked out (original positions kept)."""
+    from transformers import DynamicCache, Qwen2Config, Qwen2ForCausalLM
+    torch.manual_seed(0)
+    m = Qwen2ForCausalLM(Qwen2Config(vocab_size=500, hidden_size=128, intermediate_size=256, num_hidden_layers=2,
+                                     num_attention_heads=4, num_key_value_heads=2)).eval()
+    m.config._attn_implementation = impl
+    ids = torch.randint(0, 500, (1, 300))
+    nxt = torch.tensor([[7]])
+    with torch.no_grad():
+        c = get_cache_method("streamingllm", {"streamingllm": {"budget_tokens": 64}}).new_cache(m)
+        m(input_ids=ids, past_key_values=c, use_cache=True)
+        mine = m(input_ids=nxt, past_key_values=c, use_cache=True).logits
+        dc = DynamicCache()
+        m(input_ids=ids, past_key_values=dc, use_cache=True)
+        am = torch.zeros(1, 301, dtype=torch.long)
+        am[:, :4] = 1
+        am[:, 300 - 60:] = 1
+        ref = m(input_ids=nxt, past_key_values=dc, attention_mask=am, position_ids=torch.tensor([[300]]),
+                use_cache=True).logits
+    assert (mine - ref).abs().max() < 1e-4

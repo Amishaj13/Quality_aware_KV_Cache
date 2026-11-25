@@ -30,6 +30,9 @@ snapkv:                      # cache_method: snapkv
   window: 32                 # observation window: the last prompt tokens whose attention picks the rest
   kernel_size: 7             # max-pool width, keeps neighbours of important tokens
   pooling: max
+streamingllm:                # cache_method: streamingllm (tag streaming<budget>)
+  budget_tokens: 1024        # tokens kept per layer and head: sinks + most recent window
+  sink_tokens: 4             # first tokens always kept ("attention sinks")
 
 dataset:
   path: datasets/sample_tasks.json

@@ -12,7 +12,13 @@ compared. Quality is pass@1 for the custom and position tasks (executable tasks)
 mean LongCodeU score for LongCodeU.
 
     quality retention  = Q_method / Q_full x 100     (100 = no loss)
-    memory reduction   = 1 - KV_method / KV_full     (KV bytes actually stored at the end)
+    memory reduction   = 1 - KV_method / KV_full     (KV bytes held on the GPU at the end)
+    slowdown           = TPOT_method / TPOT_full     (time per generated token; 1.0 = same speed)
+
+For every method except CPU offloading the whole cache is on the GPU, so "KV on the GPU"
+is simply the bytes stored. For `offload` the cache is the same size as the full cache
+but almost all of it sits in CPU memory: kv_method_mib shows the total, kv_gpu_method_mib
+the part left on the GPU, and the reduction is computed from the latter.
 
 Writes results/comparison/methods_comparison.{md,csv}, a per-depth table, and charts.
 With 30 or 80 samples a difference of a few points is within noise; the report says so.
@@ -39,9 +45,12 @@ WORKLOADS = {
     "longcodeu": ("longcodeu_8k_full", "longcodeu_8k_{m}"),
 }
 # fixed colour per method (follows the method, never its rank)
-METHOD_ORDER = ["full", "kivi4", "kivi2", "snapkv1024", "snapkv2048", "snapkv512", "snapkv4096"]
-PALETTE = ["#52514e", "#2a78d6", "#eb6834", "#1baf7a", "#6250d6", "#eda100", "#b5338a"]  # gray = full-cache reference
-MARKERS = ["o", "s", "D", "^", "v", "P", "X"]
+METHOD_ORDER = ["full", "kivi4", "kivi2", "snapkv1024", "snapkv2048", "streaming1024", "streaming2048", "offload",
+                "snapkv512", "snapkv4096"]
+# gray = full-cache reference; eviction methods share a hue family per method (dark = smaller budget)
+PALETTE = ["#52514e", "#2a78d6", "#eb6834", "#1baf7a", "#0e7a54", "#c23b8a", "#8a2361", "#d9a400",
+           "#6ccfa8", "#06513a"]
+MARKERS = ["o", "s", "D", "^", "v", "P", "X", "*", "<", ">"]
 
 
 def method_style(m):
@@ -69,6 +78,7 @@ def compare_pair(full, comp, workload):
         return {"n_compared": 0, "n_failed_method": int((comp.status != "ok").sum())}
     qf, qc = _quality(f, workload), _quality(c, workload)
     mf, mc = f.kv_cache_bytes.mean(), c.kv_cache_bytes.mean()
+    gf, gc = _gpu_kv(f).mean(), _gpu_kv(c).mean()
     row = {
         "n_compared": len(ok),
         "n_failed_method": int((comp.status != "ok").sum()),
@@ -77,8 +87,9 @@ def compare_pair(full, comp, workload):
         "quality_retention_pct": None if quality_retention(qc, qf) is None else round(quality_retention(qc, qf), 1),
         "kv_full_mib": round(mf / 2**20, 1),
         "kv_method_mib": round(mc / 2**20, 1),
-        "memory_reduction_pct": None if memory_reduction(mf, mc) is None else round(memory_reduction(mf, mc), 1),
-        "compression_ratio": None if compression_ratio(mf, mc) is None else round(compression_ratio(mf, mc), 2),
+        "kv_gpu_method_mib": round(gc / 2**20, 1),
+        "memory_reduction_pct": None if memory_reduction(gf, gc) is None else round(memory_reduction(gf, gc), 1),
+        "compression_ratio": None if compression_ratio(gf, gc) is None else round(compression_ratio(gf, gc), 2),
         "peak_gpu_gib_full": round(f.peak_allocated_gpu_bytes.mean() / 2**30, 2)
         if f.peak_allocated_gpu_bytes.notna().any() else None,
         "peak_gpu_gib_method": round(c.peak_allocated_gpu_bytes.mean() / 2**30, 2)
@@ -87,9 +98,19 @@ def compare_pair(full, comp, workload):
         "tpot_ms_method": round(c.tpot_ms.mean(), 1) if c.tpot_ms.notna().any() else None,
         "mean_input_tokens": round(f.input_tokens.mean()),
     }
-    if "snapkv_compressed" in c:
-        row["snapkv_compressed_share_pct"] = round(100 * c.snapkv_compressed.fillna(False).astype(bool).mean(), 1)
+    if row["tpot_ms_full"] and row["tpot_ms_method"]:
+        row["slowdown_x"] = round(row["tpot_ms_method"] / row["tpot_ms_full"], 2)
+    for flag in ("snapkv_compressed", "streaming_compressed"):
+        if flag in c:   # share of prompts where tokens were actually evicted
+            row["evicted_share_pct"] = round(100 * c[flag].fillna(False).astype(bool).mean(), 1)
     return row
+
+
+def _gpu_kv(df):
+    """KV bytes on the GPU per row: kv_cache_gpu_bytes when measured (offload), else all of kv_cache_bytes."""
+    if "kv_cache_gpu_bytes" in df:
+        return df.kv_cache_gpu_bytes.fillna(df.kv_cache_bytes)
+    return df.kv_cache_bytes
 
 
 def methods_for(pattern_prefix, suffix, dirs):
@@ -162,14 +183,21 @@ def run(results_directory="results"):
         charts.append(depth_chart(dt, out_dir / "position_by_depth.png"))
 
     cols = ["workload", "method", "n_compared", "quality_full", "quality_method", "quality_retention_pct",
-            "kv_full_mib", "kv_method_mib", "memory_reduction_pct", "compression_ratio",
-            "peak_gpu_gib_full", "peak_gpu_gib_method", "tpot_ms_full", "tpot_ms_method", "mean_input_tokens"]
-    if "snapkv_compressed_share_pct" in t:
-        cols.append("snapkv_compressed_share_pct")
+            "kv_full_mib", "kv_method_mib", "kv_gpu_method_mib", "memory_reduction_pct", "compression_ratio",
+            "peak_gpu_gib_full", "peak_gpu_gib_method", "tpot_ms_full", "tpot_ms_method", "slowdown_x",
+            "mean_input_tokens", "evicted_share_pct"]
+    cols = [c for c in cols if c in t]
     md = ["# KV-cache methods vs the full cache", "",
           "Quality: pass@1 (% of executable tasks solved) for `custom` and `position`; mean LongCodeU score "
           "× 100 for `longcodeu`. Retention = method ÷ full × 100. Memory = KV-cache bytes actually stored at "
-          "the end of generation, averaged over the compared samples.", "",
+          "the end of generation, averaged over the compared samples; `kv_gpu_method_mib` is the part of it on "
+          "the GPU (only smaller than `kv_method_mib` for `offload`, whose cache lives in CPU memory), and "
+          "memory reduction is computed from it. `slowdown_x` = time per generated token ÷ the full cache's. "
+          "`evicted_share_pct` = share of prompts where SnapKV / StreamingLLM actually dropped tokens "
+          "(prompts shorter than the budget are left untouched).", "",
+          "Methods: `kivi4`/`kivi2` = 4/2-bit quantization; `snapkv<N>` = keep the N prompt tokens the question "
+          "attends to; `streaming<N>` = keep the first 4 tokens + the most recent N-4 (StreamingLLM); "
+          "`offload` = full cache kept in CPU memory, copied to the GPU layer by layer.", "",
           "Small samples (30 custom tasks, 80 LongCodeU, 150 position prompts): differences of a few points "
           "are within noise.", "",
           t[cols].to_markdown(index=False), ""]
@@ -193,16 +221,23 @@ def tradeoff_chart(t, path):
         ax.axhline(100, color="#b5b4ae", lw=1, ls="--", zorder=1)
         for _, r in s.iterrows():
             col, mk = method_style(r.method)
-            ax.scatter(r.memory_reduction_pct, r.quality_retention_pct, s=70, marker=mk, color=col,
-                       edgecolor="white", linewidth=2, zorder=3)
-            ax.annotate(r.method, (r.memory_reduction_pct, r.quality_retention_pct), xytext=(6, 4),
-                        textcoords="offset points", fontsize=8.5, color="#0b0b0b")
+            ax.scatter(r.memory_reduction_pct, r.quality_retention_pct, s=80, marker=mk, color=col,
+                       edgecolor="white", linewidth=1.5, zorder=3, label=r.method)
         ax.set_xlim(-5, 100)
         lo = min(50, s.quality_retention_pct.min() - 10)
         ax.set_ylim(lo, max(115, s.quality_retention_pct.max() + 10))
         style(ax, wl, "KV memory saved (%)", "quality kept (% of full cache)", grid_axis="both")
-    footnote(fig, "Top right is best. Dashed line = full-cache quality. Each point is one method on the same samples.")
-    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    # one shared legend instead of labels next to the points (those overlapped when points coincide)
+    seen = {}
+    for ax in axes[0]:
+        for h, lab in zip(*ax.get_legend_handles_labels()):
+            seen.setdefault(lab, h)
+    order = [m for m in METHOD_ORDER if m in seen] + sorted(set(seen) - set(METHOD_ORDER))
+    fig.legend([seen[m] for m in order], order, loc="lower center", ncols=min(len(order), 8), frameon=False,
+               fontsize=9, bbox_to_anchor=(0.5, 0.05))
+    footnote(fig, "Top right is best. Dashed line = full-cache quality. Each point is one method on the same samples. "
+                  "Memory saved = KV bytes on the GPU.")
+    fig.tight_layout(rect=(0, 0.13, 1, 1))
     fig.savefig(path)
     plt.close(fig)
     return path

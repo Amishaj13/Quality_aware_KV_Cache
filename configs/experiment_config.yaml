@@ -2,7 +2,7 @@
 experiment:
   experiment_id: baseline_001
   workflow: all              # all | longcode | completion | repoqa | debugging | testgen
-  cache_method: full         # full | kivi4 | kivi2 | snapkv (or pass --cache-method)
+  cache_method: full         # full | kivi4 | kivi2 | snapkv | streamingllm | offload (or pass --cache-method)
   context_length: 8192       # budget for prompt tokens + max_new_tokens
   max_new_tokens: 256
   batch_size: 1
@@ -39,6 +39,9 @@ snapkv:                      # cache_method: snapkv
   window: 32                 # observation window: the last prompt tokens whose attention picks the rest
   kernel_size: 7             # max-pool width, keeps neighbours of important tokens
   pooling: max
+streamingllm:                # cache_method: streamingllm (tag streaming<budget>)
+  budget_tokens: 1024        # tokens kept per layer and head: sinks + most recent window
+  sink_tokens: 4             # first tokens always kept ("attention sinks")
 
 dataset:
   path: datasets/sample_tasks.json

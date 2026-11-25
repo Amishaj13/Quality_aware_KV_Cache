@@ -1,6 +1,6 @@
 # Roadmap after the first review (Dec 2026 – Mar 2027)
 
-KIVI and SnapKV are implemented (`cache_methods/kivi.py`, `cache_methods/snapkv.py`); the rest is not yet. The code is arranged so each item plugs in without
+KIVI, SnapKV, StreamingLLM and CPU offloading are implemented (`cache_methods/kivi.py`, `snapkv.py`, `streamingllm.py`, `offload.py`); the rest is not yet. The code is arranged so each item plugs in without
 changing the runner.
 
 ## 1. Compression methods (`cache_methods/`)
@@ -10,7 +10,8 @@ validator rejects the name, so no run can silently fall back to the full cache.
 
 | Method | Idea | Integration note |
 |---|---|---|
-| StreamingLLM | attention sinks + recent window | simplest first: custom `Cache` subclass that evicts the middle |
+| StreamingLLM | attention sinks + recent window | **done**: own cache layer; exact prefill, then sinks + sliding recent window (budget 1024/2048 like SnapKV) |
+| CPU offloading | full cache in CPU memory, layer-wise prefetch | **done**: transformers `DynamicCache(offloading=True)`; reports KV bytes on GPU vs CPU |
 | H2O | keep heavy-hitter tokens by accumulated attention | needs attention scores: eager attention or a patched sdpa |
 | SnapKV | select prompt KV using an observation window | **done**: forward pre-hook recomputes window queries; cache evicts once after prefill |
 | PyramidKV | per-layer budgets, larger in lower layers | builds on SnapKV selection |
