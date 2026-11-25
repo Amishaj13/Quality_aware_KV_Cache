@@ -1,6 +1,6 @@
 # Baseline pipeline. torch is NOT listed: use the CUDA build already in the SageMaker
 # image (setup_env.sh only installs it if it is missing or has no CUDA support).
-transformers>=4.45
+transformers>=5.0   # cache methods build Cache(layers=[...]); tested with 5.14.1
 accelerate>=0.34
 safetensors
 huggingface_hub

@@ -247,17 +247,24 @@ def test_offload_bytes_by_device():
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="offloading needs a CUDA GPU")
-def test_offload_matches_full_cache_and_moves_kv_to_cpu(small_model):
-    model = small_model.to("cuda")
+def test_offload_matches_full_cache_and_moves_kv_to_cpu():
+    from transformers import Qwen2Config, Qwen2ForCausalLM
+    torch.manual_seed(0)
+    # 4 layers: when generation ends, offloading keeps one layer (the prefetched layer 0) on the GPU
+    model = Qwen2ForCausalLM(Qwen2Config(vocab_size=500, hidden_size=128, intermediate_size=256, num_hidden_layers=4,
+                                         num_attention_heads=4, num_key_value_heads=2)).to("cuda", torch.bfloat16).eval()
+    model.config._attn_implementation = "eager"
     ids = torch.randint(0, 500, (1, 300), device="cuda")
     full, fc = generate(model, get_cache_method("full", {}), ids)
     method = get_cache_method("offload", {})
     off, oc = generate(model, method, ids)
-    assert off == full
-    assert cache_bytes(oc) == cache_bytes(fc)                 # same cache, different place
+    assert off == full                                        # nothing is changed, only moved
+    total = cache_bytes(oc)
+    assert total == cache_bytes(fc)                           # same cache, different place
     stats = method.cache_stats(oc)
-    assert stats["kv_cache_cpu_bytes"] > stats["kv_cache_gpu_bytes"]
-    small_model.to("cpu")
+    assert stats["kv_cache_gpu_bytes"] + stats["kv_cache_cpu_bytes"] == total
+    assert stats["kv_cache_gpu_bytes"] <= total // 4          # at most one of the 4 layers left on the GPU
+    assert stats["kv_cache_cpu_bytes"] >= 3 * total // 4
 
 
 @pytest.mark.parametrize("impl", ["eager", "sdpa"])
