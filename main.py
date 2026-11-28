@@ -9,6 +9,9 @@
   python main.py position      # position sweep 0/25/50/75/100 % at ~8K tokens (full cache)
   python main.py analyze-position
   python main.py compare       # every method vs the full cache -> results/comparison/
+  python main.py recommend --workload longcodeu --free-gpu-gib 7 --max-slowdown 1.3
+                               # pick the method that saves most GPU KV memory within your limits
+  python main.py recommend --report   # Pareto fronts + example choices -> results/recommender/
   python main.py rescore --experiment-id ID   # re-score saved responses (no GPU needed)
   python main.py show-failures --experiment-id ID [--workflow testgen]
   python main.py prepare-longcodeu   # download LongCodeU, build the 0~8K subset (datasets/processed/)
@@ -27,7 +30,7 @@ COMMANDS = {
     "report": "server_report", "check-gpu": "check_gpu", "download": "download_model",
     "first": "baseline_inference", "run": "run_experiments", "analyze": "analyze_results",
     "position": "run_position_sweep", "prepare-longcodeu": "prepare_longcodeu",
-    "rescore": "rescore", "show-failures": "show_failures", "analyze-position": "analyze_position", "compare": "compare_methods", "s3": "sync_to_s3",
+    "rescore": "rescore", "show-failures": "show_failures", "analyze-position": "analyze_position", "compare": "compare_methods", "recommend": "recommend", "s3": "sync_to_s3",
 }
 
 
