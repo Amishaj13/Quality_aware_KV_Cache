@@ -50,6 +50,7 @@ EvalPlus. Each becomes a loader that emits the same sample schema as
 - Quality-memory Pareto fronts per workflow.
 
 ## 4. Recommendation engine
+**Rule-based version done** (`recommender/`, `python main.py recommend`, guide in `docs/RECOMMENDER.md`).
 Rule-based first (lookup over measured Pareto fronts by workflow, context length,
 free GPU memory, minimum quality, latency limit). Train a model only once there are
 enough reliable measurements.

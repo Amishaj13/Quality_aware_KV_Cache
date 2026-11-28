@@ -182,6 +182,17 @@ reduction (KV bytes held on the GPU; for every method but `offload` that is all 
   tokens as the model's own attention weights, that a StreamingLLM decoding step equals full attention with the
   evicted tokens masked out, and (on a GPU) that offloading gives the same tokens as the full cache.
 
+## Quality-aware recommender (no GPU needed)
+Picks, for one workload and your limits, the method that leaves the least KV cache on the GPU while keeping
+enough quality and speed. It reads the measured runs in `results/json/`; plain-English guide in
+[docs/RECOMMENDER.md](docs/RECOMMENDER.md).
+
+```bash
+python main.py recommend --workload longcodeu --free-gpu-gib 7 --max-slowdown 1.3 --min-quality 95
+python main.py recommend --workload position --batch 32 --free-gpu-gib 7 --max-slowdown 1.3 --strict
+python main.py recommend --report        # Pareto fronts + example choices -> results/recommender/
+```
+
 ## Research framing (from the project plan)
 Base paper: Yuan et al., *KV Cache Compression, But What Must We Give in Return?* (EMNLP 2024 Findings),
 which benchmarks KV-cache compression on LongBench and Needle-in-a-Haystack. This project narrows it to
@@ -246,6 +257,7 @@ datasets/                sample_tasks.json + builder; prepare_longcodeu.py -> pr
 models/model_loader.py   tokenizer + model, loaded once
 inference/               prompt building, context budget, timed full-cache generation
 cache_methods/           CacheMethod interface; "full" implemented, six methods registered as planned
+recommender/             quality-aware method recommender (profiles from results/json, rules, report)
 evaluation/              correctness (AST + execution), memory, latency, text-quality, LongCodeU metrics, QR/MR/CR/pass@1
 scripts/                 server_report, check_gpu, download_model, baseline_inference, run_experiments,
                          analyze_results, run_position_sweep, analyze_position, sync_to_s3, build_notebooks
@@ -278,4 +290,5 @@ Keep its results separate: different model (Llama-3.1-8B), fp16, and a needle-re
 
 ## Next steps
 See [docs/ROADMAP.md](docs/ROADMAP.md): KIVI, SnapKV, StreamingLLM and CPU offloading are done; next H2O, PyramidKV, EvolKV; public benchmarks after licence checks; position
-sensitivity per method (the full-cache sweep exists); Pareto analysis; then the recommender.
+sensitivity per method (done for all methods); Pareto fronts and the rule-based recommender (done, `recommender/`);
+16K/32K contexts so the recommender has longer measurements to work from.

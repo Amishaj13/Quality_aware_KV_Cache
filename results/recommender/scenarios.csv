@@ -1,0 +1,16 @@
+scenario,workload,batch,free_gpu_gib,min_quality,choice,kv_saved_pct,quality_retention_pct,slowdown_x,strict,max_slowdown
+"One user, no speed limit",custom,1,7.0,95,offload,96.4,100.0,1.06,,
+"One user, no speed limit",longcodeu,1,7.0,95,offload,96.4,100.0,1.6,,
+"One user, no speed limit",position,1,7.0,95,offload,96.4,100.0,2.0,,
+Interactive: at most 30% slower,custom,1,7.0,95,offload,96.4,100.0,1.06,,1.3
+Interactive: at most 30% slower,longcodeu,1,7.0,95,kivi2,80.1,96.0,1.18,,1.3
+Interactive: at most 30% slower,position,1,7.0,95,snapkv1024,84.9,109.1,0.94,,1.3
+"Same, quality guaranteed (95% lower bound)",custom,1,7.0,95,offload,96.4,100.0,1.06,True,1.3
+"Same, quality guaranteed (95% lower bound)",longcodeu,1,7.0,95,kivi4,67.8,98.5,1.16,True,1.3
+"Same, quality guaranteed (95% lower bound)",position,1,7.0,95,snapkv1024,84.9,109.1,0.94,True,1.3
+"Busy server: 32 requests at once, ≤30% slower",custom,32,7.0,90,offload,96.4,100.0,1.06,,1.3
+"Busy server: 32 requests at once, ≤30% slower",longcodeu,32,7.0,90,kivi2,80.1,96.0,1.18,,1.3
+"Busy server: 32 requests at once, ≤30% slower",position,32,7.0,90,snapkv1024,84.9,109.1,0.94,,1.3
+"Quality can drop to 75%, ≤10% slower",custom,1,7.0,75,offload,96.4,100.0,1.06,,1.1
+"Quality can drop to 75%, ≤10% slower",longcodeu,1,7.0,75,snapkv2048,50.8,76.7,0.97,,1.1
+"Quality can drop to 75%, ≤10% slower",position,1,7.0,75,snapkv1024,84.9,109.1,0.94,,1.1
